@@ -33,6 +33,7 @@ Features:
 ### Message Sender
 
 Message Sender will send the message to Agent Server. Sender use specific Queue Name and Service Name to determin this message is send to which Agent Server's Service
+
 Message Sender can have many RabbitMQ server's host when Message Sender need to connect to RabbitMQ server, it will use first connectable server. If none of then can connect it will raise an exception.
 
 ### Agent Server
@@ -43,12 +44,15 @@ Agent Server will connect to RabbitMQ server and listen a Queue to take messages
 
 Service is business logic code. There will be two type of service: RPC Service and Message Service.
 RPC Service will get message process process it then response a result message to sender provided tempory Queue.
+
 Message Service will get message and process it but no need to send a result message to sender.
+
 Each Service has two params to name it: category and name. When we use Sender to call this service you can use: NODE_NAME.CATEGORY.NAME to address the service.
 
 ## Message Format
 
 There has two type of message: Call Message and Response Message
+
 Call Message:
 
 		<?xml version="1.0"?>
