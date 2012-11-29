@@ -3,7 +3,6 @@ import asyncore
 import logging
 import time
 from multiprocessing import Process
-from servicebus.receiver import *
 
 class ServiceBus(object):
     def __init__(self, configuration):

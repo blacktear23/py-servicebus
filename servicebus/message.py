@@ -1,16 +1,13 @@
-import time
 import uuid
 import logging
-import thread
 import asyncore
-from servicebus import pika
-from servicebus.command import cmd
 from datetime import datetime
-
-DIDA_TIMEOUT = 60
+from servicebus import pika
+from servicebus.watcher import PingWatcher
 
 class TimeoutException(Exception):
     pass
+
 
 class RabbitMQMessageDriver(object):
     """docstring for AbstractMessageReceiver"""
@@ -30,6 +27,7 @@ class RabbitMQMessageDriver(object):
             credentials=pika.PlainCredentials(self.username, self.password),
             ssl=self.ssl
         ))
+        self.connected = True
         return connection
         
     def declare_exchange(self, exchange_name, exchange_type='direct'):
@@ -45,6 +43,7 @@ class RabbitMQMessageDriver(object):
         self.channel.queue_declare(queue=queue_name, durable=True)
         self.channel.queue_bind(exchange=exchange_name, queue=queue_name, routing_key=queue_name)
 
+
 class AbstractReceiver(RabbitMQMessageDriver):
     # this mothod just receive one message.
     # only used by test.
@@ -52,6 +51,15 @@ class AbstractReceiver(RabbitMQMessageDriver):
         self.channel.basic_qos(prefetch_count=1)
         self.channel.basic_consume(self.__on_receive, queue=self.queue_name)
         pika.asyncore_loop(count=1)
+
+    def loop(self):
+        while True:
+            pika.asyncore_loop(count=1)
+            # if there has no connections, return!
+            mapValues = asyncore.socket_map.values()
+            if len(mapValues) <= 0:
+                logging.info("All connection closed!")
+                return
 
     def response_message(self, channel, method, header, message):
         channel.basic_publish(exchange='',
@@ -69,7 +77,8 @@ class AbstractReceiver(RabbitMQMessageDriver):
     def start_receive(self, count=None):
         self.channel.basic_qos(prefetch_count=1)
         self.channel.basic_consume(self.__on_receive, queue=self.queue_name)
-        pika.asyncore_loop()
+        PingWatcher.start_watch(self)
+        self.loop()
     
     def __on_receive(self, channel, method, header, body):
         try:
@@ -85,7 +94,8 @@ class AbstractReceiver(RabbitMQMessageDriver):
                 self.on_message(channel, method, header, body)
         except Exception, e:
             logging.error(e)
-            
+
+
 class AbstractMessageSender(RabbitMQMessageDriver):
     def set_exchange(self, exchange_name, exchange_type='direct'):
         self.exchange_name = exchange_name
@@ -99,7 +109,8 @@ class AbstractMessageSender(RabbitMQMessageDriver):
             self.channel.basic_publish(exchange=self.exchange_name, routing_key=str(target), body=msg)
         finally:
             self.close()
-        
+
+
 class MessageSender(AbstractMessageSender):
     def on_response(self, ch, method, props, body):
         if props.correlation_id == self.corr_id:
@@ -140,47 +151,3 @@ class MessageSender(AbstractMessageSender):
         finally:
             # A call is finish delete the queue
             self.channel.queue_delete(queue=self.callback_queue)
-
-class PingWatcher:
-    def __init__(self, receiver):
-        self.receiver = receiver
-
-    def do_watch(self):
-        ip = self.receiver.host
-        while True:
-            time.sleep(DIDA_TIMEOUT)
-            ret = self.ping(ip)
-            if not ret and self.receiver.connected:
-                self.receiver.connected = False
-                logging.info("Ping Error!")
-                for value in asyncore.socket_map.values():
-                    logging.info("Close Socket: %s" % str(value))
-                    value.socket.close()
-                logging.info("Clean socket map!")
-                asyncore.socket_map = {}
-                # we close all connections then we do not to watch now.
-                return
-
-    def do_ping(self, ip):
-        command = "ping -c 1 %s | grep \" 1 received,\"" % (ip)
-        ret = cmd(command)[0]
-        return ret != ""
-    
-    def ping(self, ip):
-        for i in range(3):
-            ret = self.do_ping(ip)
-            if ret: return True
-            time.sleep(1)
-        return False
-
-    def run_watch(self, ignore):
-        while True:
-            try:
-                self.do_watch()
-            except Exception, e:
-                logging.error(e)
-
-    @classmethod
-    def start_watch(cls, receiver):
-        pw = PingWatcher(receiver)
-        thread.start_new_thread(pw.run_watch, (None,))

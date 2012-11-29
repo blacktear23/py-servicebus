@@ -1,15 +1,17 @@
 from servicebus.service import ServiceBus
 from servicebus.configuration import Configuration
+import sys
 import logging
 logging.basicConfig(level=logging.INFO, 
                     format='[%(asctime)s]%(levelname)s:%(message)s')
-                    
+
+node_name = sys.argv[1]
 CONFIG = Configuration({
     'hosts': ['localhost'],
     'user': 'admin',
     'password': '123456',
     'use_ssl': False,
-    'node_name': 'TESTER-001',
+    'node_name': node_name,
     'secret_token': 'secret token',
 })
 
@@ -24,8 +26,8 @@ class PrinterService(object):
     def on_message(self, request):
         logging.info(request.get_params())
         sender = request.get_sender()
-        ret = sender.call('TESTER-001.math.add', {'a': 1, 'b': 1})
-        logging.info("Calculate 1+1=%s" % ret[1])
+        ret = sender.call('TESTER-002.math.add', {'a': 1, 'b': 2})
+        logging.info("Calculste 1 + 1 = %s" % (ret[1]))
 
 def create_service_bus():
     sbus = ServiceBus(CONFIG)
