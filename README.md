@@ -49,6 +49,15 @@ Message Service will get message and process it but no need to send a result mes
 
 Each Service has two params to name it: category and name. When we use Sender to call this service you can use: NODE_NAME.CATEGORY.NAME to address the service.
 
+### How it work when RabbitMQ is DOWN
+
+In Agent Server, when your configuration has more than one RabbitMQ server host for example 2, Agent Server will fork 2 process (AS-A and AS-B) and connect to each RabbitMQ server(RMQ-A and RMQ-B). So if one RabbitMQ server(RMQ-A) is down, AS-A process will try to reconnect to RabbitMQ server RMQ-A and in Message Sender part it will find RMQ-A is not connectable, so Message Sender will connect to RMQ-B and send message via RMQ-B. Then this call message will process in AS-B process.
+
+### How it work when network is Broken
+
+In Agent Server, you will have a PingWatcher to ping each of your RabbitMQ server. If you have a network problem it will close all connection and trigger reconnect logic in Agent Server.
+
+
 ## Message Format
 
 There has two type of message: Call Message and Response Message

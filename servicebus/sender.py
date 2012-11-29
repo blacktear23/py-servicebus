@@ -19,8 +19,15 @@ class Sender(object):
 			raise Exception("Target not validate")
 		return parts
 
+	def ping(self, target, timeout=3):
+		caller = self.get_caller()
+		ret = caller.call(target, "PING", timeout)
+		return ret == "PONG"
+
 	def call(self, target, params):
 		target, category, service = self.parse_target(target)
+		if not self.ping(target):
+			raise Exception("Cannot connect to %s" % target)
 		caller = self.get_caller()
 		req_msg = XmlRequestGenerator(self.configuration, category, service, params)
 		ret = caller.call(target, req_msg.to_xml())
