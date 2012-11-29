@@ -27,7 +27,7 @@ class PrinterService(object):
         logging.info(request.get_params())
         sender = request.get_sender()
         ret = sender.call('TESTER-002.math.add', {'a': 1, 'b': 2})
-        logging.info("Calculste 1 + 1 = %s" % (ret[1]))
+        logging.info("Calculste 1 + 2 = %s" % (ret[1]))
 
 def create_service_bus():
     sbus = ServiceBus(CONFIG)
