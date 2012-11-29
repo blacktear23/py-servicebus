@@ -1,6 +1,6 @@
 # Service Bus use RabbitMQ
 
-Provide a basic RPC and Message process framework use RabbitMQ message server.
+Provide a basic RPC and Message process framework based on RabbitMQ message server.
 
 Features:
 	1. Auto reconnect when network is down
