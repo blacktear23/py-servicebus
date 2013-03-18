@@ -24,7 +24,7 @@ class Sender(object):
         ret = caller.call(target, "PING", timeout)
         return ret == "PONG"
 
-    def call(self, target, params):
+    def call(self, target, params, timeout=300):
         target, category, service = self.parse_target(target)
         if target == self.configuration.node_name:
             raise Exception("Target is self, cannot do RPC %s.%s.%s" % (target, category, service))
@@ -33,7 +33,7 @@ class Sender(object):
             raise Exception("Cannot connect to %s" % target)
         caller = self.get_caller()
         req_msg = XmlRequestGenerator(self.configuration, category, service, params)
-        ret = caller.call(target, req_msg.to_xml())
+        ret = caller.call(target, req_msg.to_xml(), timeout)
         resp_parser = XmlResponseParser()
         return resp_parser.parse(ret)
 
@@ -47,3 +47,4 @@ class Sender(object):
         if self.caller:
             self.caller.close()
             self.caller = None
+

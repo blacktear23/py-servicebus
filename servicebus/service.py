@@ -13,7 +13,7 @@ class ServiceBus(object):
         self.after_fork_hook = None
 
     def after_fork(self):
-        if after_fork_hook:
+        if self.after_fork_hook:
             self.after_fork_hook()
         
     def set_after_fork_hook(self, hook):
