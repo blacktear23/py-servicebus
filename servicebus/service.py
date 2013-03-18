@@ -10,7 +10,15 @@ class ServiceBus(object):
         self.rpc_services = {}
         self.message_services = {}
         self.node_name = ""
+        self.after_fork_hook = None
+
+    def after_fork(self):
+        if after_fork_hook:
+            self.after_fork_hook()
         
+    def set_after_fork_hook(self, hook):
+        self.after_fork_hook = hook
+
     def set_node_name(self, name):
         self.node_name = name
         
@@ -47,6 +55,7 @@ class ServiceBus(object):
             process.join()
 
     def run_server(self, configuration, host):
+        self.after_fork()
         while True:
             receiver = None
             try:

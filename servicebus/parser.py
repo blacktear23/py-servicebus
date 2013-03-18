@@ -126,15 +126,15 @@ class XmlMessageParser(AbstractMessageParser, XmlParserHelper):
 
 class XmlResponseParser(XmlParserHelper):
     def parse(self, xml_doc):
-        #try:
-        doc = parseString(xml_doc)
-        root = doc.childNodes[0]
-        rid = self.get_request_id(root)
-        message = self.get_message(root)
-        return (rid, message)
-        #except Exception, e:
-        #    # if got any exception in parse return None
-        #    return None
+        try:
+            doc = parseString(xml_doc)
+            root = doc.childNodes[0]
+            rid = self.get_request_id(root)
+            message = self.get_message(root)
+            return (rid, message)
+        except Exception, e:
+            # if got any exception in parse return None
+            return None
 
     def get_request_id(self, root):
         node = root.getElementsByTagName('id')[0]
