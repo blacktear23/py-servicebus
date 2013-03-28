@@ -29,7 +29,7 @@ class XmlParserHelper(object):
     def get_text(self, node):
         rc = []
         for child in node.childNodes:
-            if child.nodeType == node.TEXT_NODE:
+            if child.nodeType == node.TEXT_NODE or child.nodeType == node.CDATA_SECTION_NODE:
                 rc.append(child.data)
         return ''.join(rc)
 
@@ -158,11 +158,7 @@ MESSAGE_TEMPLATE = """<?xml version="1.0"?>
 REPORT_XML_TEMPLATE = """<?xml version="1.0"?>
 <response>
     <id>%s</id>
-    <message>
-    <![CDATA[
-    %s
-    ]]>
-    </message>
+    <message><![CDATA[%s]]></message>
 </response>
 """
 
