@@ -42,6 +42,11 @@ class ServiceBus(object):
             return None
         return self.message_services[key]
 
+    def is_background_service(self, service):
+        if hasattr(service, 'background'):
+            return service.background
+        return False
+
     def run_services(self):
         processes = []
         for host in self.configuration.hosts:

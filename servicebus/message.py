@@ -66,7 +66,6 @@ class AbstractReceiver(RabbitMQMessageDriver):
             routing_key=header.reply_to,
             properties=pika.BasicProperties(correlation_id=header.correlation_id),
             body=str(message))
-        channel.basic_ack(delivery_tag=method.delivery_tag)
 
     def on_rpc(self, channel, method, header, body):
         self.response_message(channel, method, header, None)
@@ -85,8 +84,10 @@ class AbstractReceiver(RabbitMQMessageDriver):
             if hasattr(header, 'reply_to') and header.reply_to != None:
                 # Here is a RPC call
                 if body == "PING":
+                    channel.basic_ack(delivery_tag=method.delivery_tag)
                     self.response_message(channel, method, header, "PONG")
                 else:
+                    channel.basic_ack(delivery_tag=method.delivery_tag)
                     self.on_rpc(channel, method, header, body)
             else:
                 # Here is just send a message

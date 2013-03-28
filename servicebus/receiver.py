@@ -45,8 +45,12 @@ class MessageBusReceiver(AbstractReceiver):
             msg = XmlResponseGenerator(event.id, error_msg)
             self.response_message(channel, method, header, msg.to_xml())
         else:
-            logging.info("Call RPC Service %s.%s" % (event.category, event.service))
-            self.__run_in_frontground(service.on_call, (request, response))
+            if self.service_bus.is_background_service(service):
+                logging.info("Call Background RPC Service %s.%s" % (event.category, event.service))
+                self.__run_in_background(service.on_call, (request, response))
+            else:
+                logging.info("Call RPC Service %s.%s" % (event.category, event.service))
+                self.__run_in_frontground(service.on_call, (request, response))
 
     def on_message(self, channel, method, header, body):
         event = self.message_parser.parse(body)
@@ -65,8 +69,12 @@ class MessageBusReceiver(AbstractReceiver):
             msg = XmlResponseGenerator(event.id, error_msg)
             self.response_message(channel, method, header, msg.to_xml())
         else:
-            logging.info("Call Message Service %s.%s" % (event.category, event.service))
-            self.__run_in_frontground(service.on_message, (request,))
+            if self.service_bus.is_background_service(service):
+                logging.info("Call Background Message Service %s.%s" % (event.category, event.service))
+                self.__run_in_background(service.on_message, (request,))
+            else:
+                logging.info("Call Message Service %s.%s" % (event.category, event.service))
+                self.__run_in_frontground(service.on_message, (request,))
 
     def __run_in_background(self, func, params):
         thread.start_new_thread(self.__run_in_frontground, (func, params))
