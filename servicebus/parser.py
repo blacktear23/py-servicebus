@@ -158,7 +158,11 @@ MESSAGE_TEMPLATE = """<?xml version="1.0"?>
 REPORT_XML_TEMPLATE = """<?xml version="1.0"?>
 <response>
     <id>%s</id>
-    <message>%s</message>
+    <message>
+    <![CDATA[
+    %s
+    ]]>
+    </message>
 </response>
 """
 
