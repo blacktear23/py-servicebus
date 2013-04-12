@@ -78,7 +78,7 @@ Response Message:
 		<?xml version="1.0"?>
 		<response>
 			<id>EVENT_ID</id>
-			<message>JSON_FORMAT_MESSAGE</message>
+			<message><![CDATA[JSON_FORMAT_MESSAGE]]></message>
 		</response>
 
 ## Usage
