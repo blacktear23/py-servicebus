@@ -47,10 +47,10 @@
 # ***** END LICENSE BLOCK *****
 
 import socket
-import pika.connection
+import connection
 import errno
 
-class BlockingConnection(pika.connection.Connection):
+class BlockingConnection(connection.Connection):
     def connect(self, host, port):
         self.socket = socket.socket()
         self.socket.connect((host, port))

@@ -48,13 +48,13 @@
 
 import random
 
-import pika.spec as spec
-import pika.codec as codec
-import pika.channel as channel
-import pika.simplebuffer as simplebuffer
-import pika.event as event
-from pika.specbase import _codec_repr
-from pika.exceptions import *
+import spec 
+import codec
+import channel
+import simplebuffer
+import event as event
+from specbase import _codec_repr
+from exceptions import *
 
 class PlainCredentials:
     def __init__(self, username, password):

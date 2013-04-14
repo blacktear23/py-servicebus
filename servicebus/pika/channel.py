@@ -46,10 +46,10 @@
 #
 # ***** END LICENSE BLOCK *****
 
-import pika.spec as spec
-import pika.codec as codec
-import pika.event as event
-from pika.exceptions import *
+import spec 
+import codec
+import event
+from exceptions import *
 
 class ChannelHandler:
     def __init__(self, connection, channel_number = None):

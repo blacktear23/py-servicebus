@@ -47,9 +47,9 @@
 # ***** END LICENSE BLOCK *****
 
 import struct
-import pika.spec as spec
+import spec as spec
 
-from pika.exceptions import *
+from exceptions import *
 
 class Frame:
     def __init__(self, frame_type, channel_number):
@@ -62,8 +62,8 @@ class Frame:
                payload + chr(spec.FRAME_END)
 
     def __repr__(self):
-        import pika.specbase
-        return pika.specbase._codec_repr(self, lambda: Frame(-1, -1))
+        import specbase
+        return specbase._codec_repr(self, lambda: Frame(-1, -1))
 
 class FrameMethod(Frame):
     def __init__(self, channel_number, method):

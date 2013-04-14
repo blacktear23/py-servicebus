@@ -46,19 +46,19 @@
 #
 # ***** END LICENSE BLOCK *****
 
-from pika.spec import \
+from spec import \
     BasicProperties
-from pika.connection import \
+from connection import \
     PlainCredentials, \
     ConnectionParameters, \
     SimpleReconnectionStrategy
 
-import pika.asyncore_adapter
-from pika.asyncore_adapter import \
+import asyncore_adapter
+from asyncore_adapter import \
     AsyncoreConnection
-asyncore_loop = pika.asyncore_adapter.loop
+asyncore_loop = asyncore_adapter.loop
 
-from pika.blocking_adapter import \
+from blocking_adapter import \
     BlockingConnection
 
 def repl_channel(host = '127.0.0.1', *args):

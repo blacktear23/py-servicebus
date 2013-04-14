@@ -51,7 +51,7 @@ import decimal
 import datetime
 import calendar
 
-from pika.exceptions import *
+from exceptions import *
 
 def encode_table(pieces, table):
     if table is None:

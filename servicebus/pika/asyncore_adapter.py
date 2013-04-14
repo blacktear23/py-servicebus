@@ -54,7 +54,7 @@ import time
 import select
 from heapq import heappush, heappop
 from errno import EAGAIN
-import pika.connection
+import connection
 import platform
 
 try:
@@ -104,7 +104,7 @@ class RabbitDispatcher(asyncore.dispatcher):
         r = self.send(fragment)
         self.connection.outbound_buffer.consume(r)
 
-class AsyncoreConnection(pika.connection.Connection):
+class AsyncoreConnection(connection.Connection):
     def delayed_call(self, delay_sec, callback):
         add_oneshot_timer_rel(delay_sec, callback)
 
