@@ -75,7 +75,6 @@ class ServiceBus(object):
             finally:
                 try:
                     self.__force_close_sockets()
-                    if receiver: receiver.close()
                 except Exception, e:
                     logging.error(e)
             logging.info('[Server %s]: Connection lost, wait 10 second to retry' % host)
