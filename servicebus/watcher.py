@@ -18,11 +18,12 @@ class PingWatcher:
             if not ret and self.receiver.connected:
                 self.receiver.connected = False
                 logging.info("Ping Error!")
-                return
-            elif not self.receiver.connected:
-                logging.info("Message receiver exited, PingWatcher out.")
-                return
+                return True
             time.sleep(DIDA_TIMEOUT)
+            if not self.receiver.connected:
+                logging.info("Message receiver exited, PingWatcher out.")
+                return True
+        return False
 
     def do_ping(self, ip):
         command_linux  = "ping -c 1 %s | grep \" 1 received,\"" % (ip)
@@ -43,7 +44,8 @@ class PingWatcher:
     def run_watch(self, ignore):
         while True:
             try:
-                self.do_watch()
+                if self.do_watch():
+                    return
             except Exception, e:
                 logging.error(e)
 
