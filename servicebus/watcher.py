@@ -19,7 +19,7 @@ class PingWatcher:
                 self.receiver.connected = False
                 logging.info("Ping Error!")
                 return
-            elif not self.receiver.connected
+            elif not self.receiver.connected:
                 logging.info("Message receiver exited, PingWatcher out.")
                 return
             time.sleep(DIDA_TIMEOUT)
