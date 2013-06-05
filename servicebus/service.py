@@ -3,6 +3,7 @@ import asyncore
 import logging
 import time
 from multiprocessing import Process
+from servicebus import utils
 
 class ServiceBus(object):
     def __init__(self, configuration):
@@ -81,8 +82,4 @@ class ServiceBus(object):
             time.sleep(10)
 
     def __force_close_sockets(self):
-        for value in asyncore.socket_map.values():
-            logging.info("Close Socket: %s" % str(value))
-            value.socket.close()
-        logging.info("Clean socket map!")
-        asyncore.socket_map = {}
+        utils.close_sockets()
