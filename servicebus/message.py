@@ -56,6 +56,9 @@ class AbstractReceiver(RabbitMQMessageDriver):
     def loop(self):
         while self.connected:
             pika.asyncore_loop(count=1)
+            # if no socket is available break the loop
+            if utils.num_sockets() <= 0:
+                break
 
         if utils.num_sockets() > 0:
             utils.close_sockets()
