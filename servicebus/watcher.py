@@ -19,6 +19,9 @@ class PingWatcher:
                 self.receiver.connected = False
                 logging.info("Ping Error!")
                 return
+            elif not self.receiver.connected
+                logging.info("Message receiver exited, PingWatcher out.")
+                return
             time.sleep(DIDA_TIMEOUT)
 
     def do_ping(self, ip):
@@ -48,3 +51,4 @@ class PingWatcher:
     def start_watch(cls, receiver):
         pw = PingWatcher(receiver)
         thread.start_new_thread(pw.run_watch, (None,))
+

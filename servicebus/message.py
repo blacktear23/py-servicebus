@@ -59,7 +59,7 @@ class AbstractReceiver(RabbitMQMessageDriver):
             # if no socket is available break the loop
             if utils.num_sockets() <= 0:
                 break
-
+        self.connected = False
         if utils.num_sockets() > 0:
             utils.close_sockets()
             logging.info("All connection closed!")
