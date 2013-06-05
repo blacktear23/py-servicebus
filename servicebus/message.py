@@ -3,6 +3,7 @@ import logging
 import asyncore
 from datetime import datetime
 from servicebus import pika
+from servicebus import utils
 from servicebus.watcher import PingWatcher
 
 class TimeoutException(Exception):
@@ -53,13 +54,13 @@ class AbstractReceiver(RabbitMQMessageDriver):
         pika.asyncore_loop(count=1)
 
     def loop(self):
-        while True:
+        while self.connected:
             pika.asyncore_loop(count=1)
-            # if there has no connections, return!
-            mapValues = asyncore.socket_map.values()
-            if len(mapValues) <= 0:
-                logging.info("All connection closed!")
-                return
+
+        if utils.num_sockets() > 0:
+            utils.close_sockets()
+            logging.info("All connection closed!")
+            return
 
     def response_message(self, channel, method, header, message):
         channel.basic_publish(exchange='',

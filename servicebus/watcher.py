@@ -2,7 +2,6 @@ import time
 import logging
 import thread
 import asyncore
-from servicebus import utils
 from servicebus.command import cmd
 
 DIDA_TIMEOUT = 60
@@ -19,7 +18,6 @@ class PingWatcher:
             if not ret and self.receiver.connected:
                 self.receiver.connected = False
                 logging.info("Ping Error!")
-                utils.close_sockets()
                 return
             time.sleep(DIDA_TIMEOUT)
 

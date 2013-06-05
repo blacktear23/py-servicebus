@@ -20,3 +20,12 @@ def close_sockets():
     finally:
         close_sockets_lock.release()
 
+
+def num_sockets():
+    global close_sockets_lock
+    try:
+        close_sockets_lock.acquire()
+        return len(asyncore.socket_map.values())
+    finally:
+        close_sockets_lock.release()
+
