@@ -24,6 +24,20 @@ class Sender(object):
         ret = caller.call(target, "PING", timeout)
         return ret == "PONG"
 
+    def ping_all(self, target, timeout=3):
+        callers = self.configuration.create_senders()
+        total = len(callers)
+        success = 0
+        for caller in callers:
+            try:
+                caller.set_exchange(self.exchange_name)
+                ret = caller.call(target, "PING", timeout)
+                if ret == "PONG":
+                    success += 1
+            except Exception, e:
+                pass
+        return success, total
+
     def call(self, target, params, timeout=300):
         target, category, service = self.parse_target(target)
         if target == self.configuration.node_name:

@@ -74,6 +74,22 @@ class Configuration(object):
             raise Exception("Cannot Connect to Message Queue!")
         return caller
 
+    """
+    This method will create N senders N is equals length of host.
+    Each of sender is connect to each host.
+    If host cannot connected, return value will not contains this host's sender.
+    """
+    def create_senders(self):
+        ret = []
+        for host in self.hosts:
+            try:
+                caller = self.__create_message_sender(host)
+                caller.ensure_connection()
+                ret.append(caller)
+            except Exception, e:
+                pass
+        return ret
+
     def queue_name(self):
         return self.node_name
         
@@ -91,7 +107,7 @@ class Configuration(object):
         for host in self.hosts:
             try:
                 caller = self.__create_message_sender(host)
-                caller.ensuer_connection()
+                caller.ensure_connection()
                 return caller
             except Exception, e:
                 pass

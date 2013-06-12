@@ -121,13 +121,13 @@ class MessageSender(AbstractMessageSender):
         if props.correlation_id == self.corr_id:
             self.response = body
             
-    def ensuer_connection(self):
+    def ensure_connection(self):
         if not self.connection.is_alive():
             self.connection = self.create_connection()
             self.channel = self.connection.channel()
             
     def call(self, target, msg, timeout=300):
-        self.ensuer_connection()
+        self.ensure_connection()
         try:
             result = self.channel.queue_declare(exclusive=True)
             self.callback_queue = result.queue
