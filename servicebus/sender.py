@@ -6,12 +6,20 @@ class Sender(object):
         self.configuration = configuration
         self.exchange_name = configuration.exchange_name
         self.caller = None
+        self.callers = None
 
     def get_caller(self):
         if self.caller == None:
             self.caller = self.configuration.create_sender()
             self.caller.set_exchange(self.exchange_name)
         return self.caller
+
+    def get_callers(self):
+        if self.callers == None:
+            self.callers = self.configuration.create_senders()
+            for caller in self.callers:
+                caller.set_exchange(self.exchange_name)
+        return self.callers
 
     def parse_target(self, target):
         parts = target.split(".")
@@ -25,7 +33,7 @@ class Sender(object):
         return ret == "PONG"
 
     def ping_all(self, target, timeout=3):
-        callers = self.configuration.create_senders()
+        callers = self.get_callers()
         total = len(callers)
         success = 0
         for caller in callers:
@@ -61,4 +69,12 @@ class Sender(object):
         if self.caller:
             self.caller.close()
             self.caller = None
+
+        if self.callers:
+            for caller in self.callers:
+                try:
+                    caller.close()
+                except Exception, e:
+                    pass
+            self.callers = None
 
