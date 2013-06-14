@@ -114,6 +114,7 @@ class AsyncoreConnection(connection.Connection):
         # Wrap the SSL socket if we SSL turned on
         if self.parameters.ssl:
             self.dispatcher.socket.setblocking(1)
+            self.dispatcher.socket.settimeout(30)
             if self.parameters.ssl_options:
                 self.dispatcher.socket = ssl.wrap_socket(self.dispatcher.socket,
                                               **self.parameters.ssl_options)
@@ -131,6 +132,7 @@ class AsyncoreConnection(connection.Connection):
         
         # Set the socket to non-blocking
         if not self.parameters.ssl:
+            self.dispatcher.socket.settimeout(None)
             self.dispatcher.socket.setblocking(0)
         self.dispatcher.connect((host, port or spec.PORT))
 
