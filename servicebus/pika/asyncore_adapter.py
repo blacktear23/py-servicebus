@@ -56,6 +56,7 @@ from heapq import heappush, heappop
 from errno import EAGAIN
 import connection
 import platform
+from datetime import datetime
 
 try:
     import ssl
@@ -143,6 +144,15 @@ class AsyncoreConnection(connection.Connection):
     def flush_outbound(self):
         while self.outbound_buffer:
             self.drain_events()
+
+    def wait_for_open(self):
+        while (not self.connection_open) and \
+                (self.reconnection_strategy.can_reconnect() or (not self.connection_close)):
+            start = datetime.now()
+            self.drain_events(300)
+            delta = datetime.now() - start
+            if delta.seconds >= 300:
+                raise Exception("Wait for open timeout")
 
     def drain_events(self, timeout=None):
         loop(count = 1, timeout = timeout)
