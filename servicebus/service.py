@@ -72,7 +72,7 @@ class ServiceBus(object):
                 logging.info('[Server %s]: Start Receive' % host)
                 receiver.start_receive()
             except Exception, e:
-                logging.error(e)
+                logging.exception(e)
             finally:
                 try:
                     self.__force_close_sockets()
