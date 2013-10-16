@@ -151,7 +151,7 @@ MESSAGE_TEMPLATE = """<?xml version="1.0"?>
     <token>%s</token>
     <catgory>%s</catgory>
     <service>%s</service>
-    <params>%s</params>
+    <params><![CDATA[%s]]></params>
 </event>
 """
 
