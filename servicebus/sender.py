@@ -8,9 +8,9 @@ class Sender(object):
         self.caller = None
         self.callers = None
 
-    def get_caller(self):
+    def get_caller(self, reverse=False):
         if self.caller == None:
-            self.caller = self.configuration.create_sender()
+            self.caller = self.configuration.create_sender(reverse)
             self.caller.set_exchange(self.exchange_name)
         return self.caller
 
@@ -28,7 +28,7 @@ class Sender(object):
         return parts
 
     def ping(self, target, timeout=3):
-        caller = self.get_caller()
+        caller = self.get_caller(True)
         ret = caller.call(target, "PING", timeout)
         return ret == "PONG"
 
@@ -46,14 +46,14 @@ class Sender(object):
                 pass
         return success, total
 
-    def call(self, target, params, timeout=300):
+    def call(self, target, params, timeout=300, reverse=False):
         target, category, service = self.parse_target(target)
         if target == self.configuration.node_name:
             raise Exception("Target is self, cannot do RPC %s.%s.%s" % (target, category, service))
 
         if not self.ping(target):
             raise Exception("Cannot connect to %s" % target)
-        caller = self.get_caller()
+        caller = self.get_caller(reverse)
         req_msg = XmlRequestGenerator(self.configuration, category, service, params)
         ret = caller.call(target, req_msg.to_xml(), timeout)
         resp_parser = XmlResponseParser()

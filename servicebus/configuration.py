@@ -63,9 +63,9 @@ class Configuration(object):
     """
     This method will get an availiable host to send message to.
     """
-    def create_sender(self):
+    def create_sender(self, reverse=False):
         for i in range(3):
-            caller = self.__get_availiable_message_sender()
+            caller = self.__get_availiable_message_sender(reverse)
             if caller != None:
                 break
             time.sleep(1)
@@ -103,8 +103,11 @@ class Configuration(object):
             port = self.port
         return port
 
-    def __get_availiable_message_sender(self):
-        for host in self.hosts:
+    def __get_availiable_message_sender(self, reverse):
+        hosts = self.hosts[:]
+        if reverse
+            hosts.reverse()
+        for host in hosts:
             try:
                 caller = self.__create_message_sender(host)
                 caller.ensure_connection()
