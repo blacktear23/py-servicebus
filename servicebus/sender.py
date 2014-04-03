@@ -1,6 +1,7 @@
 import logging
 from servicebus.parser import XmlRequestGenerator, XmlResponseParser
 
+
 class Sender(object):
     def __init__(self, configuration):
         self.configuration = configuration
@@ -9,13 +10,13 @@ class Sender(object):
         self.callers = None
 
     def get_caller(self, reverse=False):
-        if self.caller == None:
+        if self.caller is None:
             self.caller = self.configuration.create_sender(reverse)
             self.caller.set_exchange(self.exchange_name)
         return self.caller
 
     def get_callers(self):
-        if self.callers == None:
+        if self.callers is None:
             self.callers = self.configuration.create_senders()
             for caller in self.callers:
                 caller.set_exchange(self.exchange_name)
@@ -77,4 +78,3 @@ class Sender(object):
                 except Exception, e:
                     pass
             self.callers = None
-

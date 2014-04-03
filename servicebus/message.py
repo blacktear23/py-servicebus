@@ -6,6 +6,7 @@ from servicebus import pika
 from servicebus import utils
 from servicebus.watcher import PingWatcher
 
+
 class TimeoutException(Exception):
     pass
 
@@ -20,7 +21,7 @@ class RabbitMQMessageDriver(object):
         self.ssl = ssl
         self.connection = self.create_connection()
         self.channel = self.connection.channel()
-    
+
     def create_connection(self):
         connection = pika.AsyncoreConnection(pika.ConnectionParameters(
             self.host,
@@ -30,14 +31,14 @@ class RabbitMQMessageDriver(object):
         ))
         self.connected = True
         return connection
-        
+
     def declare_exchange(self, exchange_name, exchange_type='direct'):
         self.channel.exchange_declare(exchange=exchange_name, type=exchange_type)
-        
+
     def close(self):
         self.channel.close()
         self.connection.close()
-        
+
     def bind_queue_to_exchange(self, queue_name, exchange_name, exchange_type='direct'):
         self.queue_name = queue_name
         self.declare_exchange(exchange_name, exchange_type)
@@ -76,16 +77,16 @@ class AbstractReceiver(RabbitMQMessageDriver):
 
     def on_message(self, channel, method, header, body):
         pass
-            
+
     def start_receive(self, count=None):
         self.channel.basic_qos(prefetch_count=1)
         self.channel.basic_consume(self.__on_receive, queue=self.queue_name)
         PingWatcher.start_watch(self)
         self.loop()
-    
+
     def __on_receive(self, channel, method, header, body):
         try:
-            if hasattr(header, 'reply_to') and header.reply_to != None:
+            if hasattr(header, 'reply_to') and header.reply_to is not None:
                 # Here is a RPC call
                 if body == "PING":
                     channel.basic_ack(delivery_tag=method.delivery_tag)
@@ -120,12 +121,12 @@ class MessageSender(AbstractMessageSender):
     def on_response(self, ch, method, props, body):
         if props.correlation_id == self.corr_id:
             self.response = body
-            
+
     def ensure_connection(self):
         if not self.connection.is_alive():
             self.connection = self.create_connection()
             self.channel = self.connection.channel()
-            
+
     def call(self, target, msg, timeout=300):
         self.ensure_connection()
         try:

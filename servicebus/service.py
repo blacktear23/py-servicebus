@@ -5,6 +5,7 @@ import time
 from multiprocessing import Process
 from servicebus import utils
 
+
 class ServiceBus(object):
     def __init__(self, configuration):
         self.configuration = configuration
@@ -16,13 +17,13 @@ class ServiceBus(object):
     def after_fork(self):
         if self.after_fork_hook:
             self.after_fork_hook()
-        
+
     def set_after_fork_hook(self, hook):
         self.after_fork_hook = hook
 
     def set_node_name(self, name):
         self.node_name = name
-        
+
     def add_rpc_service(self, category, name, service):
         key = "%s.%s" % (category, name)
         self.rpc_services[key] = service
@@ -33,13 +34,13 @@ class ServiceBus(object):
 
     def lookup_rpc_service(self, category, name):
         key = "%s.%s" % (category, name)
-        if not self.rpc_services.has_key(key):
+        if key not in self.rpc_services:
             return None
         return self.rpc_services[key]
 
     def lookup_message_service(self, category, name):
         key = "%s.%s" % (category, name)
-        if not self.message_services.has_key(key):
+        if key not in self.message_services:
             return None
         return self.message_services[key]
 
@@ -55,7 +56,7 @@ class ServiceBus(object):
             process.daemon = True
             process.start()
             processes.append(process)
-            
+
         # wait for all process
         for process in processes:
             process.join()

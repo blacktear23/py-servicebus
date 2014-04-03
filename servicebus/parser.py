@@ -4,10 +4,11 @@ from datetime import datetime, timedelta
 from xml.dom.minidom import parseString
 from servicebus.event import Event
 
+
 def do_generate_token(configuration, date=None):
     key = configuration.secret_token
     td = timedelta(1)
-    if date == None:
+    if date is None:
         datestr = datetime.now().isoformat()[:10]
     elif date == "prev":
         datestr = (datetime.now() - td).isoformat()[:10]
@@ -61,13 +62,11 @@ class JSONParamsParser(XmlParserHelper):
 #           JSON_PARAMS
 #       </params>
 #   </event>
-
 class XmlMessageParser(AbstractMessageParser, XmlParserHelper):
-
     def parse(self, xml_doc):
         try:
             doc = parseString(xml_doc)
-        
+
             if not self.validate_xml(doc):
                 return None
             root = doc.childNodes[0]
@@ -76,17 +75,17 @@ class XmlMessageParser(AbstractMessageParser, XmlParserHelper):
             category = self.get_category(root)
             service = self.get_service(root)
             token = self.get_token(root)
-        
+
             params_parser = JSONParamsParser()
             params_parser.set_params_node(root.getElementsByTagName('params')[0])
             params_parser.parse()
             params = params_parser.params
-        
+
             return Event(eid, category, service, token, params)
         except Exception, e:
             # if got any exception in parse return None
             return None
-        
+
     def validate_xml(self, doc):
         root = doc.childNodes[0]
         if not root.tagName == 'event':
@@ -94,7 +93,7 @@ class XmlMessageParser(AbstractMessageParser, XmlParserHelper):
         if not root.hasAttribute('version'):
             return False
         return True
-        
+
     def validate_token(self, token):
         if self.generate_token() == token:
             return True
@@ -103,22 +102,22 @@ class XmlMessageParser(AbstractMessageParser, XmlParserHelper):
         elif self.generate_token("next") == token:
             return True
         return False
-        
+
     def get_message_version(self, root):
         return root.getAttribute('version')
-        
+
     def get_event_id(self, root):
         node = root.getElementsByTagName('id')[0]
         return self.get_text(node)
-        
+
     def get_category(self, root):
         node = root.getElementsByTagName('catgory')[0]
         return self.get_text(node)
-        
+
     def get_service(self, root):
         node = root.getElementsByTagName('service')[0]
         return self.get_text(node)
-        
+
     def get_token(self, root):
         node = root.getElementsByTagName('token')[0]
         return self.get_text(node)
@@ -144,6 +143,7 @@ class XmlResponseParser(XmlParserHelper):
         node = root.getElementsByTagName('message')[0]
         return self.get_text(node)
 
+
 ID_SEED = 0
 MESSAGE_TEMPLATE = """<?xml version="1.0"?>
 <event version="1">
@@ -154,7 +154,6 @@ MESSAGE_TEMPLATE = """<?xml version="1.0"?>
     <params><![CDATA[%s]]></params>
 </event>
 """
-
 REPORT_XML_TEMPLATE = """<?xml version="1.0"?>
 <response>
     <id>%s</id>

@@ -4,6 +4,7 @@ from servicebus.parser import XmlMessageParser, XmlResponseGenerator
 from servicebus.message import AbstractReceiver
 from servicebus.request import Request
 
+
 class RPCResponse(object):
     def __init__(self, event, channel, method, header, receiver):
         self.event = event
@@ -39,7 +40,7 @@ class MessageBusReceiver(AbstractReceiver):
         request = Request(event, self)
         service = self.service_bus.lookup_rpc_service(event.category, event.service)
 
-        if service == None:
+        if service is None:
             error_msg = 'Cannot Find RPC Service: %s.%s' % (event.category, event.service)
             logging.error(error_msg)
             msg = XmlResponseGenerator(event.id, error_msg)
@@ -63,7 +64,7 @@ class MessageBusReceiver(AbstractReceiver):
         request = Request(event, self)
         service = self.service_bus.lookup_message_service(event.category, event.service)
 
-        if service == None:
+        if service is None:
             error_msg = 'Cannot Find Message Service: %s.%s' % (event.category, event.service)
             logging.error(error_msg)
             msg = XmlResponseGenerator(event.id, error_msg)

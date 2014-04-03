@@ -4,6 +4,7 @@ import thread
 import asyncore
 from servicebus.command import cmd
 
+
 DIDA_TIMEOUT = 60
 
 
@@ -26,18 +27,19 @@ class PingWatcher:
         return False
 
     def do_ping(self, ip):
-        command_linux  = "ping -c 1 %s | grep \" 1 received,\"" % (ip)
+        command_linux = "ping -c 1 %s | grep \" 1 received,\"" % (ip)
         command_macosx = "ping -c 1 %s | grep \" 1 packets received,\"" % (ip)
         for command in [command_linux, command_macosx]:
             ret = cmd(command)[0]
             if ret != "":
                 return True
         return False
-    
+
     def ping(self, ip):
         for i in range(3):
             ret = self.do_ping(ip)
-            if ret: return True
+            if ret:
+                return True
             time.sleep(1)
         return False
 
@@ -53,4 +55,3 @@ class PingWatcher:
     def start_watch(cls, receiver):
         pw = PingWatcher(receiver)
         thread.start_new_thread(pw.run_watch, (None,))
-

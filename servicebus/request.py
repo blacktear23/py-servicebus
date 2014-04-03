@@ -1,5 +1,6 @@
 from servicebus.sender import Sender
 
+
 class Request(object):
     def __init__(self, event, receiver):
         self.event = event

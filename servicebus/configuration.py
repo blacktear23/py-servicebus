@@ -3,7 +3,9 @@ from servicebus.message import MessageSender
 from servicebus.receiver import MessageBusReceiver
 from servicebus.command import get_host_name
 
+
 DEFAULT_EXCHANGE_NAME = 'py-servicebus'
+
 
 class Configuration(object):
     """
@@ -25,25 +27,25 @@ class Configuration(object):
         self.hosts = config['hosts']
         self.secret_token = config['secret_token']
         self.port = 5672
-        if config.has_key('port'):
+        if 'port' in config:
             self.port = int(config['port'])
         self.ssl_port = 5671
-        if config.has_key('ssl_port'):
+        if 'ssl_port' in config:
             self.ssl_port = int(config['ssl_port'])
         self.use_ssl = False
-        if config.has_key('use_ssl'):
+        if 'use_ssl' in config:
             self.use_ssl = config['use_ssl']
         self.user = None
-        if config.has_key('user'):
+        if 'user' in config:
             self.user = config['user']
         self.password = None
-        if config.has_key('password'):
+        if 'password' in config:
             self.password = config['password']
         self.node_name = get_host_name()
-        if config.has_key('node_name'):
+        if 'node_name' in config:
             self.node_name = config['node_name']
         self.exchange_name = DEFAULT_EXCHANGE_NAME
-        if config.has_key('exchange_name'):
+        if 'exchange_name' in config:
             self.exchange_name = config['exchange_name']
 
     """
@@ -66,10 +68,10 @@ class Configuration(object):
     def create_sender(self, reverse=False):
         for i in range(3):
             caller = self.__get_availiable_message_sender(reverse)
-            if caller != None:
+            if caller is not None:
                 break
             time.sleep(1)
-        
+
         if not caller:
             raise Exception("Cannot Connect to Message Queue!")
         return caller
@@ -92,7 +94,7 @@ class Configuration(object):
 
     def queue_name(self):
         return self.node_name
-        
+
     def exchange_name(self):
         return self.exchange_name
 
@@ -105,7 +107,7 @@ class Configuration(object):
 
     def __get_availiable_message_sender(self, reverse):
         hosts = self.hosts[:]
-        if reverse
+        if reverse:
             hosts.reverse()
         for host in hosts:
             try:

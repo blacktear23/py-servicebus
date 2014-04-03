@@ -2,7 +2,9 @@ import threading
 import logging
 import asyncore
 
+
 close_sockets_lock = threading.Lock()
+
 
 def _do_close_sockets():
     for value in asyncore.socket_map.values():
@@ -28,4 +30,3 @@ def num_sockets():
         return len(asyncore.socket_map.values())
     finally:
         close_sockets_lock.release()
-
