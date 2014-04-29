@@ -86,7 +86,7 @@ class BlockingConnection(connection.Connection):
         except socket.timeout:
             # subclass of socket.error catched below, so re-raise.
             raise
-        except socket.error, exn:
+        except socket.error as exn:
             if hasattr(exn, 'errno'):
                 # 2.6 and newer have an errno field.
                 code = exn.errno

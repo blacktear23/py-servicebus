@@ -83,7 +83,7 @@ class RabbitDispatcher(asyncore.dispatcher):
     def handle_read(self):
         try:
             buf = self.recv(self.connection.suggested_buffer_size())
-        except socket.error, exn:
+        except socket.error as exn:
             if hasattr(exn, 'errno') and (exn.errno == EAGAIN):
                 # Weird, but happens very occasionally.
                 return

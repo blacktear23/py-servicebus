@@ -98,7 +98,7 @@ class AbstractReceiver(RabbitMQMessageDriver):
                 # Here is just send a message
                 channel.basic_ack(delivery_tag=method.delivery_tag)
                 self.on_message(channel, method, header, body)
-        except Exception, e:
+        except Exception as e:
             logging.exception(e)
 
 

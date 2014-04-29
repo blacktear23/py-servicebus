@@ -82,7 +82,7 @@ class XmlMessageParser(AbstractMessageParser, XmlParserHelper):
             params = params_parser.params
 
             return Event(eid, category, service, token, params)
-        except Exception, e:
+        except Exception as e:
             # if got any exception in parse return None
             return None
 
@@ -131,7 +131,7 @@ class XmlResponseParser(XmlParserHelper):
             rid = self.get_request_id(root)
             message = self.get_message(root)
             return (rid, message)
-        except Exception, e:
+        except Exception as e:
             # if got any exception in parse return None
             return None
 

@@ -43,7 +43,7 @@ class Sender(object):
                 ret = caller.call(target, "PING", timeout)
                 if ret == "PONG":
                     success += 1
-            except Exception, e:
+            except Exception as e:
                 pass
         return success, total
 
@@ -75,6 +75,6 @@ class Sender(object):
             for caller in self.callers:
                 try:
                     caller.close()
-                except Exception, e:
+                except Exception as e:
                     pass
             self.callers = None

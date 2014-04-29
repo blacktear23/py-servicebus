@@ -88,7 +88,7 @@ class Configuration(object):
                 caller = self.__create_message_sender(host)
                 caller.ensure_connection()
                 ret.append(caller)
-            except Exception, e:
+            except Exception as e:
                 pass
         return ret
 
@@ -114,7 +114,7 @@ class Configuration(object):
                 caller = self.__create_message_sender(host)
                 caller.ensure_connection()
                 return caller
-            except Exception, e:
+            except Exception as e:
                 pass
         return None
 

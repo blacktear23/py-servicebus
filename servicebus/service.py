@@ -72,12 +72,12 @@ class ServiceBus(object):
                 receiver.bind_queue_to_exchange(configuration.queue_name(), configuration.exchange_name)
                 logging.info('[Server %s]: Start Receive' % host)
                 receiver.start_receive()
-            except Exception, e:
+            except Exception as e:
                 logging.exception(e)
             finally:
                 try:
                     self.__force_close_sockets()
-                except Exception, e:
+                except Exception as e:
                     logging.error(e)
             logging.info('[Server %s]: Connection lost, wait 10 second to retry' % host)
             time.sleep(10)

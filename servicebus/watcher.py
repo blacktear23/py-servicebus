@@ -48,7 +48,7 @@ class PingWatcher:
             try:
                 if self.do_watch():
                     return
-            except Exception, e:
+            except Exception as e:
                 logging.error(e)
 
     @classmethod
