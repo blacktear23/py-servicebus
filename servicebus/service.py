@@ -1,7 +1,8 @@
+import time
+import copy
 import thread
 import asyncore
 import logging
-import time
 from multiprocessing import Process
 from servicebus import utils
 
@@ -32,17 +33,24 @@ class ServiceBus(object):
         key = "%s.%s" % (category, name)
         self.message_services[key] = service
 
+    # We copy the service object is for each message process.
+    # This copy is for Background Service running. If we do not
+    # copy this object, Background Service will return last received
+    # message's data. So if there has 2 same service running in background
+    # will cause a status report bug.
     def lookup_rpc_service(self, category, name):
         key = "%s.%s" % (category, name)
         if key not in self.rpc_services:
             return None
-        return self.rpc_services[key]
+        origin_obj = self.rpc_services[key]
+        return copy.copy(origin_obj)
 
     def lookup_message_service(self, category, name):
         key = "%s.%s" % (category, name)
         if key not in self.message_services:
             return None
-        return self.message_services[key]
+        origin_obj = self.message_services[key]
+        return copy.copy(origin_obj)
 
     def is_background_service(self, service):
         if hasattr(service, 'background'):
