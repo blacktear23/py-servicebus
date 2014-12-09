@@ -140,6 +140,14 @@ class AsyncoreConnection(connection.Connection):
     def disconnect_transport(self):
         if self.dispatcher:
             self.dispatcher.close()
+            # Then we should delete reference for Heartbeat callback in timer_heap
+            # if we do not do this, timer_heap will be a memory leak maker: The
+            # Connection object will be referenced for a very long time(maybe forever)
+            # So we should remove the callback reference in timer_heap list
+            for i in xrange(len(timer_heap)):
+                conn_obj = timer_heap[i][1].im_self.connection
+                if not conn_obj.connection_open:
+                    del timer_heap[i]
 
     def flush_outbound(self):
         while self.outbound_buffer:
