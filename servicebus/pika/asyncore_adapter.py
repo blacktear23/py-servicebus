@@ -145,9 +145,12 @@ class AsyncoreConnection(connection.Connection):
             # Connection object will be referenced for a very long time(maybe forever)
             # So we should remove the callback reference in timer_heap list
             for i in xrange(len(timer_heap)):
-                conn_obj = timer_heap[i][1].im_self.connection
-                if not conn_obj.connection_open:
-                    del timer_heap[i]
+                try:
+                    conn_obj = timer_heap[i][1].im_self.connection
+                    if not conn_obj.connection_open:
+                        del timer_heap[i]
+                except:
+                    pass
 
     def flush_outbound(self):
         while self.outbound_buffer:
