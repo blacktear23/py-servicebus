@@ -57,7 +57,7 @@ class ServiceBus(object):
             return service.background
         return False
 
-    def run_services(self):
+    def run_services(self, join=True):
         processes = []
         for host in self.configuration.hosts:
             process = Process(target=self.run_server, args=(self.configuration, host))
@@ -66,8 +66,10 @@ class ServiceBus(object):
             processes.append(process)
 
         # wait for all process
-        for process in processes:
-            process.join()
+        if join:
+            for process in processes:
+                process.join()
+        return processes
 
     def run_server(self, configuration, host):
         self.after_fork()
