@@ -105,6 +105,7 @@ class RabbitDispatcher(asyncore.dispatcher):
         r = self.send(fragment)
         self.connection.outbound_buffer.consume(r)
 
+
 class AsyncoreConnection(connection.Connection):
     def delayed_call(self, delay_sec, callback):
         add_oneshot_timer_rel(delay_sec, callback)
@@ -118,10 +119,10 @@ class AsyncoreConnection(connection.Connection):
             self.dispatcher.socket.settimeout(30)
             if self.parameters.ssl_options:
                 self.dispatcher.socket = ssl.wrap_socket(self.dispatcher.socket,
-                                              **self.parameters.ssl_options)
+                                                         **self.parameters.ssl_options)
             else:
                 self.dispatcher.socket = ssl.wrap_socket(self.dispatcher.socket)
-                
+
             # Fix 2.7.1+ SSL socket bug
             # If Python version is 2.7.1, we should connect it first,
             # then everything works OK
@@ -130,7 +131,7 @@ class AsyncoreConnection(connection.Connection):
             # so we only connect the socket when Python version is 2.7.1
             if platform.python_version().startswith("2.7.1"):
                 self.dispatcher.socket.connect((host, port or spec.PORT))
-        
+
         # Set the socket to non-blocking
         if not self.parameters.ssl:
             self.dispatcher.socket.settimeout(None)
@@ -166,31 +167,36 @@ class AsyncoreConnection(connection.Connection):
                 raise Exception("Wait for open timeout")
 
     def drain_events(self, timeout=None):
-        loop(count = 1, timeout = timeout)
+        loop(count=1, timeout=timeout)
 
 timer_heap = []
+
 
 def add_oneshot_timer_abs(firing_time, callback):
     heappush(timer_heap, (firing_time, callback))
 
+
 def add_oneshot_timer_rel(firing_delay, callback):
     add_oneshot_timer_abs(time.time() + firing_delay, callback)
 
-def next_event_timeout(default_timeout=None): 
+
+def next_event_timeout(default_timeout=None):
     cutoff = run_timers_internal()
     if timer_heap:
         timeout = timer_heap[0][0] - cutoff
         if default_timeout is not None and timeout > default_timeout:
             timeout = default_timeout
     elif default_timeout is None:
-        timeout = 30.0 # default timeout
+        timeout = 30.0  # default timeout
     else:
         timeout = default_timeout
     return timeout
 
+
 def log_timer_error(info):
     sys.stderr.write('EXCEPTION IN ASYNCORE_ADAPTER TIMER\n')
     traceback.print_exception(*info)
+
 
 def run_timers_internal():
     cutoff = time.time()
@@ -202,13 +208,15 @@ def run_timers_internal():
         cutoff = time.time()
     return cutoff
 
+
 def loop1(map, timeout=None):
     if map:
-        asyncore.loop(timeout = next_event_timeout(timeout), map = map, count = 1, use_poll=True)
+        asyncore.loop(timeout=next_event_timeout(timeout), map=map, count=1, use_poll=True)
     else:
         time.sleep(next_event_timeout(timeout))
 
-def loop(map = None, count = None, timeout=None):
+
+def loop(map=None, count=None, timeout=None):
     if map is None:
         map = asyncore.socket_map
     if count is None:

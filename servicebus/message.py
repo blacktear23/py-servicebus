@@ -1,4 +1,5 @@
 import uuid
+import signal
 import logging
 import asyncore
 from datetime import datetime
@@ -21,6 +22,8 @@ class RabbitMQMessageDriver(object):
         self.ssl = ssl
         self.connection = self.create_connection()
         self.channel = self.connection.channel()
+        self.background_threads = []
+        self.running = True
 
     def create_connection(self):
         connection = pika.AsyncoreConnection(pika.ConnectionParameters(
@@ -56,7 +59,7 @@ class AbstractReceiver(RabbitMQMessageDriver):
 
     def loop(self):
         while self.connected:
-            pika.asyncore_loop(count=1)
+            pika.asyncore_loop(count=1, timeout=5)
             # if no socket is available break the loop
             if utils.num_sockets() <= 0:
                 break
@@ -68,9 +71,9 @@ class AbstractReceiver(RabbitMQMessageDriver):
 
     def response_message(self, channel, method, header, message):
         channel.basic_publish(exchange='',
-            routing_key=header.reply_to,
-            properties=pika.BasicProperties(correlation_id=header.correlation_id),
-            body=str(message))
+                              routing_key=header.reply_to,
+                              properties=pika.BasicProperties(correlation_id=header.correlation_id),
+                              body=str(message))
 
     def on_rpc(self, channel, method, header, body):
         self.response_message(channel, method, header, None)
@@ -82,7 +85,15 @@ class AbstractReceiver(RabbitMQMessageDriver):
         self.channel.basic_qos(prefetch_count=1)
         self.channel.basic_consume(self.__on_receive, queue=self.queue_name)
         PingWatcher.start_watch(self)
+        signal.signal(signal.SIGTERM, self.process_exit)
         self.loop()
+        return self.running
+
+    def process_exit(self, signum, frame):
+        logging.info("Shutdown")
+        self.connected = False
+        self.running = False
+        self.close()
 
     def __on_receive(self, channel, method, header, body):
         try:
@@ -134,7 +145,8 @@ class MessageSender(AbstractMessageSender):
             self.callback_queue = result.queue
             self.response = None
             self.corr_id = str(uuid.uuid4())
-            self.channel.basic_publish(exchange=self.exchange_name,
+            self.channel.basic_publish(
+                exchange=self.exchange_name,
                 routing_key=str(target),
                 properties=pika.BasicProperties(
                     reply_to=self.callback_queue,

@@ -1,5 +1,5 @@
 import logging
-import thread
+import threading
 from servicebus.parser import XmlMessageParser, XmlResponseGenerator
 from servicebus.message import AbstractReceiver
 from servicebus.request import Request
@@ -16,7 +16,7 @@ class RPCResponse(object):
     def send(self, message):
         msg = XmlResponseGenerator(self.event.id, message)
         self.receiver.response_message(self.channel, self.method, self.header,
-            msg.to_xml())
+                                       msg.to_xml())
 
 
 class MessageBusReceiver(AbstractReceiver):
@@ -77,8 +77,21 @@ class MessageBusReceiver(AbstractReceiver):
                 logging.info("Call Message Service %s.%s" % (event.category, event.service))
                 self.__run_in_frontground(service.on_message, (request,))
 
+    def add_background_service(self, thread):
+        nthreads = [thread]
+        for t in self.background_threads:
+            if t.is_alive():
+                nthreads.append(t)
+        self.background_threads = nthreads
+
+    def wait_background_services(self):
+        for t in self.background_threads:
+            t.join()
+
     def __run_in_background(self, func, params):
-        thread.start_new_thread(self.__run_in_frontground, (func, params))
+        thread = threading.Thread(self.__run_in_frontground, (func, params))
+        thread.start()
+        self.add_background_service(thread)
 
     def __run_in_frontground(self, func, params):
         func(*params)
