@@ -89,7 +89,7 @@ class MessageBusReceiver(AbstractReceiver):
             t.join()
 
     def __run_in_background(self, func, params):
-        thread = threading.Thread(self.__run_in_frontground, (func, params))
+        thread = threading.Thread(target=self.__run_in_frontground, args=(func, params))
         thread.start()
         self.add_background_service(thread)
 
