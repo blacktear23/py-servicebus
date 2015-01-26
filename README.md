@@ -136,3 +136,24 @@ If we want to call NODE-01's math.add service, the code should be:
 		print ret
 
 Then ret will be (1, 3). Sender#call will return a tuple, it contains 2 items first is Event ID second is result that Service return.
+
+## Logging Service
+
+In new version, py-servicebus add LoggingService class to provide UDP based multi-process logging service. If we use basic file handler for logging at multi-process program, you will get some problem on logging system, such as no logging message write to logging file.
+
+py-servicebus LoggingService is design to fix this problem. LoggingService just use UDP to serve logging message and write those messages to a time rotated files. And it also very easy to use:
+```python
+import os
+import time
+import logging
+from servicebus.logging_service import LoggingService
+
+def write_pid():
+    with open(“/var/run/application.pid”, ‘a+’) as fp:
+        fp.write(“%s\n” % str(os.getpid()))
+
+LoggingService.start_logging_server(“/var/log/application.log”, 9999, write_pid)
+time.sleep(1)
+LoggingService.init_logging(9999, logging.INFO)
+# Other codes that fork others processes...
+```
