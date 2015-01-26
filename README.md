@@ -149,8 +149,8 @@ import logging
 from servicebus.logging_service import LoggingService
 
 def write_pid():
-    with open(“/var/run/application.pid”, ‘a+’) as fp:
-        fp.write(“%s\n” % str(os.getpid()))
+    with open('/var/run/application.pid', 'a+') as fp:
+        fp.write('%s\n' % str(os.getpid()))
 
 LoggingService.start_logging_server(“/var/log/application.log”, 9999, write_pid)
 time.sleep(1)
