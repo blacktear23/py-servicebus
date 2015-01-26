@@ -152,7 +152,7 @@ def write_pid():
     with open('/var/run/application.pid', 'a+') as fp:
         fp.write('%s\n' % str(os.getpid()))
 
-LoggingService.start_logging_server(“/var/log/application.log”, 9999, write_pid)
+LoggingService.start_logging_server('/var/log/application.log', 9999, write_pid)
 time.sleep(1)
 LoggingService.init_logging(9999, logging.INFO)
 # Other codes that fork others processes...
