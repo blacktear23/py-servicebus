@@ -49,9 +49,6 @@ class Sender(object):
 
     def call(self, target, params, timeout=300, reverse=False):
         target, category, service = self.parse_target(target)
-        if target == self.configuration.node_name:
-            raise Exception("Target is self, cannot do RPC %s.%s.%s" % (target, category, service))
-
         if not self.ping(target):
             raise Exception("Cannot connect to %s" % target)
         caller = self.get_caller(reverse)
