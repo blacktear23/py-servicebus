@@ -95,9 +95,6 @@ class Configuration(object):
     def queue_name(self):
         return self.node_name
 
-    def exchange_name(self):
-        return self.exchange_name
-
     def get_port(self):
         if self.use_ssl:
             port = self.ssl_port

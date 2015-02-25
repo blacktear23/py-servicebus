@@ -56,6 +56,7 @@ from heapq import heappush, heappop
 from errno import EAGAIN
 import connection
 import platform
+import spec
 from datetime import datetime
 
 try:
