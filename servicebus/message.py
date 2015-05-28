@@ -37,7 +37,7 @@ class RabbitMQMessageDriver(object):
         return connection
 
     def declare_exchange(self, exchange_name, exchange_type='direct'):
-        self.channel.exchange_declare(exchange=exchange_name, type=exchange_type)
+        self.channel.exchange_declare(exchange=exchange_name, exchange_type=exchange_type)
 
     def close(self):
         if self.connected:
