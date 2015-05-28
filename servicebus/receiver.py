@@ -38,7 +38,7 @@ class MessageBusReceiver(AbstractReceiver):
 
         response = RPCResponse(event, channel, method, header, self)
         request = Request(event, self)
-        service = self.service_bus.lookup_rpc_service(event.category, event.service)
+        service = self.service_bus.lookup_rpc_service_thread(event.category, event.service)
 
         if service is None:
             error_msg = 'Cannot Find RPC Service: %s.%s' % (event.category, event.service)
@@ -46,12 +46,15 @@ class MessageBusReceiver(AbstractReceiver):
             msg = XmlResponseGenerator(event.id, error_msg)
             self.response_message(channel, method, header, msg.to_xml())
         else:
-            if self.service_bus.is_background_service(service):
-                logging.info("Call Background RPC Service %s.%s" % (event.category, event.service))
-                self.__run_in_background(service.on_call, (request, response))
-            else:
-                logging.info("Call RPC Service %s.%s" % (event.category, event.service))
-                self.__run_in_frontground(service.on_call, (request, response))
+            logging.info("Call RPC Service %s.%s" % (event.category, event.service))
+            self.__run_in_frontground(service.on_call, (request, response))
+
+            # if self.service_bus.is_background_service(service):
+            #     logging.info("Call Background RPC Service %s.%s" % (event.category, event.service))
+            #     self.__run_in_background(service.on_call, (request, response))
+            # else:
+            #     logging.info("Call RPC Service %s.%s" % (event.category, event.service))
+            #     self.__run_in_frontground(service.on_call, (request, response))
 
     def on_message(self, channel, method, header, body):
         event = self.message_parser.parse(body)
@@ -70,12 +73,15 @@ class MessageBusReceiver(AbstractReceiver):
             msg = XmlResponseGenerator(event.id, error_msg)
             self.response_message(channel, method, header, msg.to_xml())
         else:
-            if self.service_bus.is_background_service(service):
-                logging.info("Call Background Message Service %s.%s" % (event.category, event.service))
-                self.__run_in_background(service.on_message, (request,))
-            else:
-                logging.info("Call Message Service %s.%s" % (event.category, event.service))
-                self.__run_in_frontground(service.on_message, (request,))
+            logging.info("Call Message Service %s.%s" % (event.category, event.service))
+            self.__run_in_frontground(service.on_message, (request,))
+
+            # if self.service_bus.is_background_service(service):
+            #     logging.info("Call Background Message Service %s.%s" % (event.category, event.service))
+            #     self.__run_in_background(service.on_message, (request,))
+            # else:
+            #     logging.info("Call Message Service %s.%s" % (event.category, event.service))
+            #     self.__run_in_frontground(service.on_message, (request,))
 
     def add_background_service(self, thread):
         nthreads = [thread]
