@@ -48,37 +48,13 @@ class ServiceBus(object):
             thread.start()
             self.rpc_services_threads[key] = thread
 
-    # We copy the service object is for each message process.
-    # This copy is for Background Service running. If we do not
-    # copy this object, Background Service will return last received
-    # message's data. So if there has 2 same service running in background
-    # will cause a status report bug.
-    def lookup_rpc_service(self, category, name):
-        key = "%s.%s" % (category, name)
-        if key not in self.rpc_services:
-            return None
-        origin_obj = self.rpc_services[key]
-        return copy.copy(origin_obj)
-
     def lookup_rpc_service_thread(self, category, name):
         key = "%s.%s" % (category, name)
         return self.rpc_services_threads.get(key, None)
 
-    def lookup_message_service(self, category, name):
-        key = "%s.%s" % (category, name)
-        if key not in self.message_services:
-            return None
-        origin_obj = self.message_services[key]
-        return copy.copy(origin_obj)
-
     def lookup_message_service_thread(self, category, name):
         key = "%s.%s" % (category, name)
         return self.message_services_threads.get(key, None)
-
-    def is_background_service(self, service):
-        if hasattr(service, 'background'):
-            return service.background
-        return False
 
     def run_services(self, join=True):
         processes = []
@@ -98,11 +74,11 @@ class ServiceBus(object):
         run = True
         receiver = None
         self.after_fork()
+        self.prepare_service_threads()
         while run:
             receiver = None
             try:
                 logging.info('[Server %s]: Build Server' % host)
-                self.prepare_service_threads()
                 receiver = configuration.create_receiver(host)
                 receiver.set_service_bus(self)
                 receiver.bind_queue_to_exchange(configuration.queue_name(), configuration.exchange_name)
@@ -110,17 +86,10 @@ class ServiceBus(object):
                 run = receiver.start_receive()
             except Exception as e:
                 logging.exception(e)
-            finally:
-                try:
-                    self.__force_close_sockets()
-                except Exception as e:
-                    logging.error(e)
+
             if run:
                 logging.info('[Server %s]: Connection lost, wait 10 second to retry' % host)
                 time.sleep(10)
-        if receiver is not None:
-            logging.info("[Server %s]: Waiting background services..." % host)
-            receiver.wait_background_services()
         self.stop_service_threads()
         logging.info("[Server %s]: Shutdown" % host)
 
@@ -132,14 +101,10 @@ class ServiceBus(object):
         self._prepare_rpc_service_threads()
 
     def stop_service_threads(self):
-        all_threads = []
-        for sthread in self.message_services_threads.values():
-            all_threads.append(sthread)
+        logging.info("Stop Service Threads")
+        all_threads = self.message_services_threads.values() + self.rpc_services_threads.values()
+        for sthread in all_threads:
             sthread.stop()
-        for sthread in self.rpc_services_threads.values():
-            all_threads.append(sthread)
-            sthread.stop()
-
         for sthread in all_threads:
             sthread.join()
 
@@ -148,21 +113,49 @@ class ServiceRunner(Thread):
     def __init__(self, service):
         super(ServiceRunner, self).__init__()
         self.service = service
-        self.queue = Queue()
+        self.queue = Queue(1)
+        self.is_background = self.is_background_service(service)
+        self.background_threads = []
+
+    def is_background_service(self, service):
+        if hasattr(service, 'background'):
+            return service.background
+        return False
 
     def run(self):
         while True:
             msg_type, params = self.queue.get()
-            print msg_type, params
             if msg_type == "stop":
+                self.queue.task_done()
                 break
-            self.run_service(msg_type, params)
+            # We copy the service object is for each message process.
+            # This copy is for Background Service running. If we do not
+            # copy this object, Background Service will return last received
+            # message's data. So if there has 2 same service running in background
+            # will cause a status report bug.
+            service = copy.copy(self.service)
+            if self.is_background:
+                logging.info("Run in background")
+                thread = Thread(target=self.run_service, args=(service, msg_type, params))
+                thread.start()
+                self.add_background_service(thread)
+            else:
+                self.run_service(service, msg_type, params)
+            self.queue.task_done()
+        self.wait_background_services()
 
-    def run_service(self, msg_type, params):
-        if msg_type == "message":
-            self.service.on_message(*params)
-        elif msg_type == "call":
-            self.service.on_call(*params)
+    def run_service(self, service, msg_type, params):
+        try:
+            if msg_type == "message":
+                service.on_message(*params)
+            elif msg_type == "call":
+                service.on_call(*params)
+        except Exception, e:
+            logging.exception(e)
+
+        if len(params) > 0:
+            request = params[0]
+            request.get_sender().close()
 
     def on_message(self, request):
         self.queue.put(("message", (request,)))
@@ -172,3 +165,16 @@ class ServiceRunner(Thread):
 
     def stop(self):
         self.queue.put(("stop", None))
+
+    def add_background_service(self, thread):
+        nthreads = [thread]
+        for t in self.background_threads:
+            if t.is_alive():
+                nthreads.append(t)
+        self.background_threads = nthreads
+
+    def wait_background_services(self):
+        if len(self.background_threads) > 0:
+            logging.info("Wait for background service threads")
+            for t in self.background_threads:
+                t.join()

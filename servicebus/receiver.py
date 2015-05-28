@@ -47,14 +47,7 @@ class MessageBusReceiver(AbstractReceiver):
             self.response_message(channel, method, header, msg.to_xml())
         else:
             logging.info("Call RPC Service %s.%s" % (event.category, event.service))
-            self.__run_in_frontground(service.on_call, (request, response))
-
-            # if self.service_bus.is_background_service(service):
-            #     logging.info("Call Background RPC Service %s.%s" % (event.category, event.service))
-            #     self.__run_in_background(service.on_call, (request, response))
-            # else:
-            #     logging.info("Call RPC Service %s.%s" % (event.category, event.service))
-            #     self.__run_in_frontground(service.on_call, (request, response))
+            service.on_call(request, response)
 
     def on_message(self, channel, method, header, body):
         event = self.message_parser.parse(body)
@@ -65,7 +58,7 @@ class MessageBusReceiver(AbstractReceiver):
             return
 
         request = Request(event, self)
-        service = self.service_bus.lookup_message_service(event.category, event.service)
+        service = self.service_bus.lookup_message_service_thread(event.category, event.service)
 
         if service is None:
             error_msg = 'Cannot Find Message Service: %s.%s' % (event.category, event.service)
@@ -74,33 +67,4 @@ class MessageBusReceiver(AbstractReceiver):
             self.response_message(channel, method, header, msg.to_xml())
         else:
             logging.info("Call Message Service %s.%s" % (event.category, event.service))
-            self.__run_in_frontground(service.on_message, (request,))
-
-            # if self.service_bus.is_background_service(service):
-            #     logging.info("Call Background Message Service %s.%s" % (event.category, event.service))
-            #     self.__run_in_background(service.on_message, (request,))
-            # else:
-            #     logging.info("Call Message Service %s.%s" % (event.category, event.service))
-            #     self.__run_in_frontground(service.on_message, (request,))
-
-    def add_background_service(self, thread):
-        nthreads = [thread]
-        for t in self.background_threads:
-            if t.is_alive():
-                nthreads.append(t)
-        self.background_threads = nthreads
-
-    def wait_background_services(self):
-        for t in self.background_threads:
-            t.join()
-
-    def __run_in_background(self, func, params):
-        thread = threading.Thread(target=self.__run_in_frontground, args=(func, params))
-        thread.start()
-        self.add_background_service(thread)
-
-    def __run_in_frontground(self, func, params):
-        func(*params)
-        if len(params) > 0:
-            request = params[0]
-            request.get_sender().close()
+            service.on_message(request)

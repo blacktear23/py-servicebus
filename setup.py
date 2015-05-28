@@ -9,14 +9,14 @@ Features:
 """
 
 setup(name='servicebus',
-      version='1.0',
+      version='2.0',
       author='Rain Li',
       author_email='blacktear23@gmail.com',
       url='https://github.com/blacktear23/py-servicebus',
       download_url='https://github.com/blacktear23/py-servicebus/downloads',
       description='Provide a basic RPC and Message process framework based on RabbitMQ message server.',
       long_description=long_description,
-      packages=['servicebus', 'servicebus.pika'],
+      packages=['servicebus', 'servicebus.pika', 'servicebus.pika.adapters'],
       license='',
       classifiers=['Development Status :: 4 - Beta',
                    'Intended Audience :: Developers',

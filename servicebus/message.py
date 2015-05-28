@@ -20,17 +20,18 @@ class RabbitMQMessageDriver(object):
         self.username = username
         self.password = password
         self.ssl = ssl
-        self.connection = self.create_connection()
-        self.channel = self.connection.channel()
-        self.background_threads = []
+        self.connection = None
+        self.channel = None
         self.running = True
+        self.connected = False
 
-    def create_connection(self):
-        connection = pika.AsyncoreConnection(pika.ConnectionParameters(
+    def create_connection(self, timeout=300):
+        connection = pika.BlockingConnection(pika.ConnectionParameters(
             self.host,
             self.port,
             credentials=pika.PlainCredentials(self.username, self.password),
-            ssl=self.ssl
+            ssl=self.ssl,
+            socket_timeout=timeout
         ))
         self.connected = True
         return connection
@@ -39,14 +40,20 @@ class RabbitMQMessageDriver(object):
         self.channel.exchange_declare(exchange=exchange_name, type=exchange_type)
 
     def close(self):
-        self.channel.close()
-        self.connection.close()
+        if self.connected:
+            self.connected = False
+            self.connection.close()
 
     def bind_queue_to_exchange(self, queue_name, exchange_name, exchange_type='direct'):
         self.queue_name = queue_name
         self.declare_exchange(exchange_name, exchange_type)
         self.channel.queue_declare(queue=queue_name, durable=True)
         self.channel.queue_bind(exchange=exchange_name, queue=queue_name, routing_key=queue_name)
+
+    def ensure_connection(self, timeout=300):
+        if not self.connected:
+            self.connection = self.create_connection(timeout)
+            self.channel = self.connection.channel()
 
 
 class AbstractReceiver(RabbitMQMessageDriver):
@@ -55,19 +62,19 @@ class AbstractReceiver(RabbitMQMessageDriver):
     def receive_one(self):
         self.channel.basic_qos(prefetch_count=1)
         self.channel.basic_consume(self.__on_receive, queue=self.queue_name)
-        pika.asyncore_loop(count=1)
 
     def loop(self):
         while self.connected:
-            pika.asyncore_loop(count=1, timeout=5)
-            # if no socket is available break the loop
-            if utils.num_sockets() <= 0:
-                break
-        self.connected = False
-        if utils.num_sockets() > 0:
-            utils.close_sockets()
-            logging.info("All connection closed!")
-            return
+            try:
+                self.channel.start_consuming()
+            except KeyboardInterrupt:
+                self.connected = False
+                self.running = False
+                self.channel.stop_consuming()
+        if not self.connected:
+            self.connected = False
+            self.channel.stop_consuming()
+        logging.info("All connection closed!")
 
     def response_message(self, channel, method, header, message):
         channel.basic_publish(exchange='',
@@ -91,23 +98,22 @@ class AbstractReceiver(RabbitMQMessageDriver):
 
     def process_exit(self, signum, frame):
         logging.info("Shutdown")
-        self.connected = False
         self.running = False
+        self.connected = False
+        self.channel.stop_consuming()
         self.close()
 
     def __on_receive(self, channel, method, header, body):
         try:
+            channel.basic_ack(delivery_tag=method.delivery_tag)
             if hasattr(header, 'reply_to') and header.reply_to is not None:
                 # Here is a RPC call
                 if body == "PING":
-                    channel.basic_ack(delivery_tag=method.delivery_tag)
                     self.response_message(channel, method, header, "PONG")
                 else:
-                    channel.basic_ack(delivery_tag=method.delivery_tag)
                     self.on_rpc(channel, method, header, body)
             else:
                 # Here is just send a message
-                channel.basic_ack(delivery_tag=method.delivery_tag)
                 self.on_message(channel, method, header, body)
         except Exception as e:
             logging.exception(e)
@@ -120,7 +126,7 @@ class AbstractMessageSender(RabbitMQMessageDriver):
 
     def send(self, target, msg):
         try:
-            if not self.connection.is_alive():
+            if not self.connected:
                 self.connection = self.create_connection()
                 self.channel = self.connection.channel()
             self.channel.basic_publish(exchange=self.exchange_name, routing_key=str(target), body=msg)
@@ -132,40 +138,45 @@ class MessageSender(AbstractMessageSender):
     def on_response(self, ch, method, props, body):
         if props.correlation_id == self.corr_id:
             self.response = body
-
-    def ensure_connection(self):
-        if not self.connection.is_alive():
-            self.connection = self.create_connection()
-            self.channel = self.connection.channel()
+            self.connection.remove_timeout(self.timeout_id)
+            self.timeout_id = None
+            self.channel.stop_consuming()
 
     def call(self, target, msg, timeout=300):
         self.ensure_connection()
+        self.response = None
+        self.timeout = False
+        self.timeout_id = None
         try:
-            result = self.channel.queue_declare(exclusive=True)
-            self.callback_queue = result.queue
-            self.response = None
             self.corr_id = str(uuid.uuid4())
+            result = self.channel.queue_declare(exclusive=True)
+            callback_queue = result.method.queue
             self.channel.basic_publish(
                 exchange=self.exchange_name,
                 routing_key=str(target),
                 properties=pika.BasicProperties(
-                    reply_to=self.callback_queue,
+                    reply_to=callback_queue,
                     correlation_id=self.corr_id,
                 ),
                 body=msg)
-            self.channel.basic_consume(self.on_response, queue=self.callback_queue, no_ack=True)
-            t_start = datetime.now()
-            while self.response is None:
-                if timeout:
-                    pika.asyncore_loop(count=1, timeout=timeout)
-                else:
-                    pika.asyncore_loop(count=1)
-                t_end = datetime.now()
-                t_spend = (t_end - t_start).seconds
-                logging.debug("Spend %s sec, timeout: %s" % (t_spend, timeout))
-                if timeout and t_spend >= timeout:
-                    raise TimeoutException("RPC Call Timeout")
+            self.channel.basic_consume(self.on_response, queue=callback_queue)
+
+            def timeout_callback():
+                print "timeout"
+                self.channel.stop_consuming()
+                self.timeout = True
+
+            self.timeout_id = self.connection.add_timeout(timeout, timeout_callback)
+            self.channel.start_consuming()
+            if self.timeout:
+                self.timeout_id = None
+                raise Exception("Timeout")
+            if self.response is None:
+                raise Exception("Response is None")
             return self.response
+        except Exception, e:
+            logging.exception(e)
+            raise e
         finally:
-            # A call is finish delete the queue
-            self.channel.queue_delete(queue=self.callback_queue)
+            if self.timeout_id:
+                self.connection.remove_timeout(self.timeout_id)

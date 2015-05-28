@@ -1,4 +1,5 @@
 import time
+import logging
 from servicebus.message import MessageSender
 from servicebus.receiver import MessageBusReceiver
 from servicebus.command import get_host_name
@@ -60,6 +61,7 @@ class Configuration(object):
             self.password,
             self.use_ssl
         )
+        receiver.ensure_connection()
         return receiver
 
     """
@@ -89,7 +91,7 @@ class Configuration(object):
                 caller.ensure_connection()
                 ret.append(caller)
             except Exception as e:
-                pass
+                logging.exception(e)
         return ret
 
     def queue_name(self):
@@ -112,7 +114,7 @@ class Configuration(object):
                 caller.ensure_connection()
                 return caller
             except Exception as e:
-                pass
+                logging.exception(e)
         return None
 
     def __create_message_sender(self, host):
