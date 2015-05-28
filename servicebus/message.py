@@ -25,13 +25,12 @@ class RabbitMQMessageDriver(object):
         self.running = True
         self.connected = False
 
-    def create_connection(self, timeout=300):
+    def create_connection(self):
         connection = pika.BlockingConnection(pika.ConnectionParameters(
             self.host,
             self.port,
             credentials=pika.PlainCredentials(self.username, self.password),
             ssl=self.ssl,
-            socket_timeout=timeout
         ))
         self.connected = True
         return connection
@@ -50,9 +49,9 @@ class RabbitMQMessageDriver(object):
         self.channel.queue_declare(queue=queue_name, durable=True)
         self.channel.queue_bind(exchange=exchange_name, queue=queue_name, routing_key=queue_name)
 
-    def ensure_connection(self, timeout=300):
+    def ensure_connection(self):
         if not self.connected:
-            self.connection = self.create_connection(timeout)
+            self.connection = self.create_connection()
             self.channel = self.connection.channel()
 
 
@@ -126,9 +125,7 @@ class AbstractMessageSender(RabbitMQMessageDriver):
 
     def send(self, target, msg):
         try:
-            if not self.connected:
-                self.connection = self.create_connection()
-                self.channel = self.connection.channel()
+            self.ensure_connection()
             self.channel.basic_publish(exchange=self.exchange_name, routing_key=str(target), body=msg)
         finally:
             self.close()
@@ -162,17 +159,15 @@ class MessageSender(AbstractMessageSender):
             self.channel.basic_consume(self.on_response, queue=callback_queue)
 
             def timeout_callback():
-                print "timeout"
                 self.channel.stop_consuming()
                 self.timeout = True
 
             self.timeout_id = self.connection.add_timeout(timeout, timeout_callback)
             self.channel.start_consuming()
+
             if self.timeout:
                 self.timeout_id = None
                 raise Exception("Timeout")
-            if self.response is None:
-                raise Exception("Response is None")
             return self.response
         except Exception, e:
             logging.exception(e)
