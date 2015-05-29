@@ -25,7 +25,7 @@ class LogRecordHandler(SocketServer.BaseRequestHandler):
             obj = self.unpickle(chunk)
             record = logging.makeLogRecord(obj)
             self.handle_log_record(record)
-        except Exception, e:
+        except Exception as e:
             logging.exception(e)
 
     def unpickle(self, data):

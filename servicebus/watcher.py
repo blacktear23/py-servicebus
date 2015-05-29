@@ -1,7 +1,7 @@
 import time
 import logging
-import thread
 import asyncore
+from threading import Thread
 from servicebus.command import cmd
 
 
@@ -43,7 +43,7 @@ class PingWatcher:
             time.sleep(1)
         return False
 
-    def run_watch(self, ignore):
+    def run_watch(self):
         while True:
             try:
                 if self.do_watch():
@@ -54,4 +54,5 @@ class PingWatcher:
     @classmethod
     def start_watch(cls, receiver):
         pw = PingWatcher(receiver)
-        thread.start_new_thread(pw.run_watch, (None,))
+        thread = Thread(target=pw.run_watch)
+        thread.start()

@@ -1,11 +1,16 @@
+import sys
 import time
 import copy
 import asyncore
 import logging
-from Queue import Queue
 from threading import Thread
 from multiprocessing import Process
 from servicebus import utils
+
+if sys.version_info < (3, 0):
+    from Queue import Queue
+else:
+    from queue import Queue
 
 
 class ServiceBus(object):
@@ -150,7 +155,7 @@ class ServiceRunner(Thread):
                 service.on_message(*params)
             elif msg_type == "call":
                 service.on_call(*params)
-        except Exception, e:
+        except Exception as e:
             logging.exception(e)
 
         if len(params) > 0:

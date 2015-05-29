@@ -169,7 +169,7 @@ class MessageSender(AbstractMessageSender):
                 self.timeout_id = None
                 raise Exception("Timeout")
             return self.response
-        except Exception, e:
+        except Exception as e:
             logging.exception(e)
             raise e
         finally:
