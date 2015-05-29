@@ -19,12 +19,16 @@ setup(
     long_description=long_description,
     packages=['servicebus', 'servicebus.pika', 'servicebus.pika.adapters'],
     license='',
-    classifiers=['Development Status :: 4 - Beta',
+    classifiers=['Development Status :: 5 - Production/Stable',
                  'Intended Audience :: Developers',
                  'Operating System :: OS Independent',
-                 'Programming Language :: Python :: 2',
                  'License :: OSI Approved :: BSD License',
+                 'Operating System :: Linux/MacOS',
+                 'Programming Language :: Python :: 2.7',
+                 'Programming Language :: Python :: 2 :: Only',
+                 'Programming Language :: Python :: Implementation :: CPython',
                  'Topic :: Message Bus',
                  'Topic :: Software Development :: Libraries',
+                 'Topic :: Software Development :: Libraries :: Python Modules',
                  ]
 )
