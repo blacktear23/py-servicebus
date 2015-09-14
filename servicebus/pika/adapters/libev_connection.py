@@ -6,7 +6,7 @@ import logging
 import warnings
 from collections import deque
 
-from pika.adapters.base_connection import BaseConnection
+from servicebus.pika.adapters.base_connection import BaseConnection
 
 LOGGER = logging.getLogger(__name__)
 
@@ -196,7 +196,7 @@ class LibevConnection(BaseConnection):
 
     def _reset_io_watcher(self):
         """Reset the IO watcher; retry as necessary
-        
+
         """
         self._io_watcher.stop()
 
