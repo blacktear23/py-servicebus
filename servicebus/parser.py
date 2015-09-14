@@ -15,7 +15,7 @@ def do_generate_token(configuration, date=None):
     elif date == "next":
         datestr = (datetime.now() + td).isoformat()[:10]
     token_str = "%s - %s" % (key, datestr)
-    return hashlib.sha1(token_str).hexdigest()
+    return hashlib.sha1(token_str.encode()).hexdigest()
 
 
 class AbstractMessageParser(object):

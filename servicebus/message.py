@@ -79,7 +79,7 @@ class AbstractReceiver(RabbitMQMessageDriver):
         channel.basic_publish(exchange='',
                               routing_key=header.reply_to,
                               properties=pika.BasicProperties(correlation_id=header.correlation_id),
-                              body=str(message))
+                              body=message.encode())
 
     def on_rpc(self, channel, method, header, body):
         self.response_message(channel, method, header, None)
@@ -105,15 +105,16 @@ class AbstractReceiver(RabbitMQMessageDriver):
     def __on_receive(self, channel, method, header, body):
         try:
             channel.basic_ack(delivery_tag=method.delivery_tag)
+            ebody = body.decode()
             if hasattr(header, 'reply_to') and header.reply_to is not None:
                 # Here is a RPC call
-                if body == "PING":
+                if ebody == "PING":
                     self.response_message(channel, method, header, "PONG")
                 else:
-                    self.on_rpc(channel, method, header, body)
+                    self.on_rpc(channel, method, header, ebody)
             else:
                 # Here is just send a message
-                self.on_message(channel, method, header, body)
+                self.on_message(channel, method, header, ebody)
         except Exception as e:
             logging.exception(e)
 
@@ -134,7 +135,7 @@ class AbstractMessageSender(RabbitMQMessageDriver):
 class MessageSender(AbstractMessageSender):
     def on_response(self, ch, method, props, body):
         if props.correlation_id == self.corr_id:
-            self.response = body
+            self.response = body.decode()
             self.connection.remove_timeout(self.timeout_id)
             self.timeout_id = None
             self.channel.stop_consuming()
