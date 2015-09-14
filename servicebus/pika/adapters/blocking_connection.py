@@ -425,7 +425,7 @@ class BlockingConnection(object):  # pylint: disable=R0902
                     LOGGER.critical('Connection close detected')
                     raise exceptions.ConnectionClosed()
                 else:
-                    LOGGER.info('Connection closed; result=%r', result)
+                    LOGGER.debug('Connection closed; result=%r', result)
             finally:
                 self._cleanup()
 
@@ -613,12 +613,12 @@ class BlockingConnection(object):  # pylint: disable=R0902
         :param str reply_text: The text reason for the close
 
         """
-        LOGGER.info('Closing connection (%s): %s', reply_code, reply_text)
+        LOGGER.debug('Closing connection (%s): %s', reply_code, reply_text)
 
         self._user_initiated_close = True
 
         # Close channels that remain opened
-        for impl_channel in pika.compat.dictvalues(self._impl._channels):
+        for impl_channel in compat.dictvalues(self._impl._channels):
             channel = impl_channel._get_cookie()
             if channel.is_open:
                 channel.close(reply_code, reply_text)
@@ -1096,7 +1096,7 @@ class BlockingChannel(object):  # pylint: disable=R0904,R0902
             replies=[spec.Basic.GetEmpty],
             one_shot=False)
 
-        LOGGER.info("Created channel=%s", self.channel_number)
+        LOGGER.debug("Created channel=%s", self.channel_number)
 
     def _cleanup(self):
         """Clean up members that might inhibit garbage collection"""
@@ -1292,7 +1292,7 @@ class BlockingChannel(object):  # pylint: disable=R0904,R0902
                 self.cancel()
 
             # Cancel consumers created via basic_consume
-            for consumer_tag in pika.compat.dictkeys(self._consumer_infos):
+            for consumer_tag in compat.dictkeys(self._consumer_infos):
                 self.basic_cancel(consumer_tag)
 
     def _dispatch_events(self):
@@ -1327,7 +1327,7 @@ class BlockingChannel(object):  # pylint: disable=R0904,R0902
         :param str reply_text: The reply text to close the channel with
 
         """
-        LOGGER.info('Channel.close(%s, %s)', reply_code, reply_text)
+        LOGGER.debug('Channel.close(%s, %s)', reply_code, reply_text)
 
         # Cancel remaining consumers
         self._cancel_all_consumers()
@@ -1769,7 +1769,7 @@ class BlockingChannel(object):  # pylint: disable=R0904,R0902
                 self._queue_consumer_generator = None
                 raise
 
-            LOGGER.info('Created new queue consumer generator %r',
+            LOGGER.debug('Created new queue consumer generator %r',
                         self._queue_consumer_generator)
 
         while self._queue_consumer_generator is not None:

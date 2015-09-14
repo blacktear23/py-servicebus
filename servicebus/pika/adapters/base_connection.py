@@ -8,7 +8,7 @@ import logging
 import socket
 import ssl
 
-import servicebus.pika.compat
+from servicebus.pika import compat
 from servicebus.pika import connection
 from servicebus.pika import exceptions
 
@@ -18,7 +18,7 @@ except AttributeError:
     SOL_TCP = 6
 
 
-if servicebus.pika.compat.PY2:
+if compat.PY2:
     _SOCKET_ERROR = socket.error
 else:
     # socket.error was deprecated and replaced by OSError in python 3.3
@@ -208,7 +208,7 @@ class BaseConnection(connection.Connection):
         else:
             ssl_text = ""
 
-        LOGGER.info('Connecting to %s:%s%s', sock_addr_tuple[4][0],
+        LOGGER.debug('Connecting to %s:%s%s', sock_addr_tuple[4][0],
                     sock_addr_tuple[4][1], ssl_text)
 
         # Connect to the socket

@@ -7,9 +7,9 @@ import logging
 import warnings
 import uuid
 
-import servicebus.pika.frame as frame
-import servicebus.pika.exceptions as exceptions
-import servicebus.pika.spec as spec
+from servicebus.pika import frame
+from servicebus.pika import exceptions
+from servicebus.pika import spec
 from servicebus.pika.utils import is_callable
 from servicebus.pika.compat import unicode_type, dictkeys, as_bytes
 
@@ -419,7 +419,7 @@ class Channel(object):
         """
         if not self.is_open:
             raise exceptions.ChannelClosed()
-        LOGGER.info('Channel.close(%s, %s)', reply_code, reply_text)
+        LOGGER.debug('Channel.close(%s, %s)', reply_code, reply_text)
         if self._consumers:
             LOGGER.debug('Cancelling %i consumers', len(self._consumers))
             for consumer_tag in dictkeys(self._consumers):
@@ -935,7 +935,7 @@ class Channel(object):
         :param pika.frame.Method method_frame: The close frame
 
         """
-        LOGGER.info('%s', method_frame)
+        LOGGER.debug('%s', method_frame)
         LOGGER.warning('Received remote Channel.Close (%s): %s',
                        method_frame.method.reply_code,
                        method_frame.method.reply_text)

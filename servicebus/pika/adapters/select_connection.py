@@ -11,7 +11,7 @@ import time
 from collections import defaultdict
 import threading
 
-import servicebus.pika.compat
+from servicebus.pika import compat
 from servicebus.pika.compat import dictkeys
 
 from servicebus.pika.adapters.base_connection import BaseConnection
@@ -27,7 +27,7 @@ WRITE = 0x0004
 ERROR = 0x0008
 
 
-if servicebus.pika.compat.PY2:
+if compat.PY2:
     _SELECT_ERROR = select.error
 else:
     # select.error was deprecated and replaced by OSError in python 3.3
@@ -35,7 +35,7 @@ else:
 
 
 def _get_select_errno(error):
-    if servicebus.pika.compat.PY2:
+    if compat.PY2:
         assert isinstance(error, select.error), repr(error)
         return error.args[0]
     else:

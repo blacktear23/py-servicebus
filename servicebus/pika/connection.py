@@ -728,7 +728,7 @@ class Connection(object):
 
         # Set our connection state
         self._set_connection_state(self.CONNECTION_CLOSING)
-        LOGGER.info("Closing connection (%s): %s", reply_code, reply_text)
+        LOGGER.debug("Closing connection (%s): %s", reply_code, reply_text)
         self.closing = reply_code, reply_text
 
         if not self._has_open_channels:
@@ -749,7 +749,7 @@ class Connection(object):
         LOGGER.warning('Could not connect, %i attempts left',
                        self.remaining_connection_attempts)
         if self.remaining_connection_attempts:
-            LOGGER.info('Retrying in %i seconds', self.params.retry_delay)
+            LOGGER.debug('Retrying in %i seconds', self.params.retry_delay)
             self.add_timeout(self.params.retry_delay, self.connect)
         else:
             self.callbacks.process(0, self.ON_CONNECTION_ERROR, self, self,
@@ -1355,7 +1355,7 @@ class Connection(object):
         :param str reply_text: The text close reason
 
         """
-        LOGGER.warning('Disconnected from RabbitMQ at %s:%i (%s): %s',
+        LOGGER.debug('Disconnected from RabbitMQ at %s:%i (%s): %s',
                        self.params.host, self.params.port, reply_code,
                        reply_text)
         self._set_connection_state(self.CONNECTION_CLOSED)

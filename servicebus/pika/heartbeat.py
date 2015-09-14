@@ -111,7 +111,7 @@ class HeartbeatChecker(object):
 
     def _close_connection(self):
         """Close the connection with the AMQP Connection-Forced value."""
-        LOGGER.info('Connection is idle, %i stale byte intervals',
+        LOGGER.debug('Connection is idle, %i stale byte intervals',
                     self._idle_byte_intervals)
         duration = self._max_idle_count * self._interval
         text = HeartbeatChecker._STALE_CONNECTION % duration
