@@ -3,9 +3,10 @@
 Provide a basic RPC and Message process framework based on RabbitMQ message server.
 
 Features:
-	1. Auto reconnect when network is down
-	2. Support SSL and dynamic token validation in message transfer
-	3. Use multi-path to auto switch RabbitMQ server when major RabbitMQ server is down
+
+1. Auto reconnect when network is down
+2. Support SSL and dynamic token validation in message transfer
+3. Use multi-path to auto switch RabbitMQ server when major RabbitMQ server is down
 
 ## Archtecture
 
