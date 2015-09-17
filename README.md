@@ -7,6 +7,7 @@ Features:
 1. Auto reconnect when network is down
 2. Support SSL and dynamic token validation in message transfer
 3. Use multi-path to auto switch RabbitMQ server when major RabbitMQ server is down
+4. Python 2 and Python 3 support
 
 ## Archtecture
 

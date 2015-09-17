@@ -25,7 +25,7 @@ setup(
                  'License :: OSI Approved :: BSD License',
                  'Operating System :: Linux/MacOS',
                  'Programming Language :: Python :: 2.7',
-                 'Programming Language :: Python :: 2 :: Only',
+                 'Programming Language :: Python :: 3',
                  'Programming Language :: Python :: Implementation :: CPython',
                  'Topic :: Message Bus',
                  'Topic :: Software Development :: Libraries',
