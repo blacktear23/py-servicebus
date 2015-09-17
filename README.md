@@ -9,26 +9,28 @@ Features:
 
 ## Archtecture
 
-						   +---------+
-						   | Message |
-						   | Sender  |
-						   +---------+
-						   		|
-					  +---------+--------+
-					  |  				 |
-					  V  				 V
-				+----------+		+----------+
-				| RabbitMQ |		| RabbitMQ |
-				|  Master  |		|  Slave   |
-				+----------+		+----------+
-					  ^					  ^
-					  |					  |
-			  +------------------+-------------------+
-			  | Queue A			 | Queue B			 | Queue C
-		+---------+			+---------+			+---------+
-		|  Agent  |			|  Agent  |			|  Agent  |
-		| Server  |			| Server  |			| Server  |
-		+---------+			+---------+			+---------+
+```
+                           +---------+
+                           | Message |
+                           | Sender  |
+                           +---------+
+                                |
+                      +---------+--------+
+                      |                  |
+                      V                  V
+                +----------+        +----------+
+                | RabbitMQ |        | RabbitMQ |
+                |  Master  |        |  Slave   |
+                +----------+        +----------+
+                      ^                   ^
+                      |                   |
+              +------------------+-------------------+
+              | Queue A          | Queue B           | Queue C
+        +---------+         +---------+         +---------+
+        |  Agent  |         |  Agent  |         |  Agent  |
+        | Server  |         | Server  |         | Server  |
+        +---------+         +---------+         +---------+
+```
 
 ### Message Sender
 
@@ -49,6 +51,8 @@ Message Service will get message and process it but no need to send a result mes
 
 Each Service has two params to name it: category and name. When we use Sender to call this service you can use: NODE_NAME.CATEGORY.NAME to address the service.
 
+In one agent server process, each Service will has it’s own thread. This design will let client call more than one service in concurrent.
+
 ### How it work when RabbitMQ is DOWN
 
 In Agent Server, when your configuration has more than one RabbitMQ server host for example 2, Agent Server will fork 2 process (AS-A and AS-B) and connect to each RabbitMQ server(RMQ-A and RMQ-B). So if one RabbitMQ server(RMQ-A) is down, AS-A process will try to reconnect to RabbitMQ server RMQ-A and in Message Sender part it will find RMQ-A is not connectable, so Message Sender will connect to RMQ-B and send message via RMQ-B. Then this call message will process in AS-B process.
@@ -64,76 +68,88 @@ There has two type of message: Call Message and Response Message
 
 Call Message:
 
-		<?xml version="1.0"?>
-		<event>
-			<id>EVENT_ID</id>
-			<token>EVENT_TOKEN</token>
-			<category>SERVICE_CATEGORY</category>
-			<service>SERVICE_NAME</service>
-			<params>JSON_FORMAT_PARAMS</params>
-		</event>
+```xml
+<?xml version="1.0"?>
+<event>
+    <id>EVENT_ID</id>
+    <token>EVENT_TOKEN</token>
+    <category>SERVICE_CATEGORY</category>
+    <service>SERVICE_NAME</service>
+    <params><![CDATA[JSON_FORMAT_PARAMS]]></params>
+</event>
+```
 
 Response Message:
 
-		<?xml version="1.0"?>
-		<response>
-			<id>EVENT_ID</id>
-			<message><![CDATA[JSON_FORMAT_MESSAGE]]></message>
-		</response>
+```xml
+<?xml version="1.0"?>
+<response>
+    <id>EVENT_ID</id>
+    <message><![CDATA[JSON_FORMAT_MESSAGE]]></message>
+</response>
+```
 
 ## Usage
 
 ### Install
 
-		$ python setup.py install
+```bash
+python setup.py install
+```
 
 ### Agent part
 
 Write a Service:
 
-		class AddService:
-			def on_call(self, request, response):
-				params = request.get_params()
-				ret = 0
-				for i in params:
-					ret += int(i)
-				response.send(ret)
+```python
+class AddService:
+    def on_call(self, request, response):
+        params = request.get_params()
+        ret = 0
+        for i in params:
+            ret += int(i)
+        response.send(ret)
+```
 
 Then regist it to ServiceBus and run it:
 
-		from servicebus.service import ServiceBus
-		from servicebus.configuration import Configuration
+```python
+from servicebus.service import ServiceBus
+from servicebus.configuration import Configuration
 
-		config = Configuration({
-			'hosts': ['localhost'],
-			'user': 'admin',
-			'password': '123456',
-			'use_ssl': False,
-			'node_name': "NODE-01",
-			'secret_token': 'secret token',
-		})
-		sbus = ServiceBus(config)
-		sbus.add_rpc_service("math", "add", AddService())
-		sbus.run_services()
+config = Configuration({
+    'hosts': ['localhost'],
+    'user': 'admin',
+    'password': '123456',
+    'use_ssl': False,
+    'node_name': "NODE-01",
+    'secret_token': 'secret token',
+})
+sbus = ServiceBus(config)
+sbus.add_rpc_service("math", "add", AddService())
+sbus.run_services()
+```
 
 ### Call part
 
 If we want to call NODE-01's math.add service, the code should be:
 
-		from servicebus.configuration import Configuration
-		from servicebus.sender import Sender
+```python
+from servicebus.configuration import Configuration
+from servicebus.sender import Sender
 
-		config = Configuration({
-			'hosts': ['localhost'],
-			'user': 'admin',
-			'password': '123456',
-			'use_ssl': False,
-			'node_name': "NODE-01",
-			'secret_token': 'secret token',
-		})
-		sender = Sender(config)
-		ret = sender.call('NODE-01.math.add', [1, 2])
-		print ret
+config = Configuration({
+    'hosts': ['localhost'],
+    'user': 'admin',
+    'password': '123456',
+    'use_ssl': False,
+    'node_name': "NODE-01",
+    'secret_token': 'secret token',
+})
+sender = Sender(config)
+ret = sender.call('NODE-01.math.add', [1, 2])
+print ret
+```
 
 Then ret will be (1, 3). Sender#call will return a tuple, it contains 2 items first is Event ID second is result that Service return.
 
