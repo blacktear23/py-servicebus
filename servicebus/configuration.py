@@ -48,6 +48,9 @@ class Configuration(object):
         self.exchange_name = DEFAULT_EXCHANGE_NAME
         if 'exchange_name' in config:
             self.exchange_name = config['exchange_name']
+        self.socket_timeout = 5
+        if 'socket_timeout' in config:
+            self.socket_timeout = config['socket_timeout']
 
     """
     Thie method will create a message receiver.
@@ -59,7 +62,8 @@ class Configuration(object):
             self.get_port(),
             self.user,
             self.password,
-            self.use_ssl
+            self.use_ssl,
+            self.socket_timeout
         )
         receiver.ensure_connection()
         return receiver
@@ -123,6 +127,7 @@ class Configuration(object):
             self.get_port(),
             self.user,
             self.password,
-            self.use_ssl
+            self.use_ssl,
+            self.socket_timeout
         )
         return caller
