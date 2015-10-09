@@ -14,7 +14,7 @@ class TimeoutException(Exception):
 
 class RabbitMQMessageDriver(object):
     """docstring for AbstractMessageReceiver"""
-    def __init__(self, host, port, username, password, ssl=False):
+    def __init__(self, host, port, username, password, ssl=False, socket_timeout=5):
         self.host = host
         self.port = port
         self.username = username
@@ -24,6 +24,7 @@ class RabbitMQMessageDriver(object):
         self.channel = None
         self.running = True
         self.connected = False
+        self.socket_timeout = socket_timeout
 
     def create_connection(self):
         connection = pika.BlockingConnection(pika.ConnectionParameters(
@@ -31,6 +32,7 @@ class RabbitMQMessageDriver(object):
             self.port,
             credentials=pika.PlainCredentials(self.username, self.password),
             ssl=self.ssl,
+            socket_timeout=self.socket_timeout
         ))
         self.connected = True
         return connection
