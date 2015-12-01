@@ -15,6 +15,23 @@ class Sender(object):
             self.caller.set_exchange(self.exchange_name)
         return self.caller
 
+    def choose_caller(self, target, reverse=False):
+        callers = self.get_callers()
+        if reverse:
+            callers.reverse()
+        ret = None
+        for caller in callers:
+            if self._caller_ping(caller, target):
+                return caller
+        return ret
+
+    def _caller_ping(self, caller, target, timeout=3):
+        try:
+            ret = caller.call(target, "PING", timeout)
+            return ret == "PONG"
+        except Exception, e:
+            return False
+
     def get_callers(self):
         if self.callers is None:
             self.callers = self.configuration.create_senders()
@@ -49,9 +66,9 @@ class Sender(object):
 
     def call(self, target, params, timeout=300, reverse=False):
         target, category, service = self.parse_target(target)
-        if not self.ping(target):
+        caller = self.choose_caller(target, reverse)
+        if caller is None:
             raise Exception("Cannot connect to %s" % target)
-        caller = self.get_caller(reverse)
         req_msg = XmlRequestGenerator(self.configuration, category, service, params)
         ret = caller.call(target, req_msg.to_xml(), timeout)
         resp_parser = XmlResponseParser()
@@ -59,7 +76,9 @@ class Sender(object):
 
     def send(self, target, params):
         target, category, service = self.parse_target(target)
-        caller = self.get_caller()
+        caller = self.choose_caller(target)
+        if caller is None:
+            raise Exception("Cannot connect to %s" % target)
         req_msg = XmlRequestGenerator(self.configuration, category, service, params)
         caller.send(target, req_msg.to_xml())
 
