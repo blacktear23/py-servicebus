@@ -72,6 +72,11 @@ class AbstractReceiver(RabbitMQMessageDriver):
                 self.connected = False
                 self.running = False
                 self.channel.stop_consuming()
+            except IOError as e:
+                if e.errno == 4:
+                    self.connected = False
+                    self.running = False
+                    self.channel.stop_consuming()
         if not self.connected:
             self.connected = False
             self.channel.stop_consuming()
