@@ -23,6 +23,8 @@ class Sender(object):
         for caller in callers:
             if self._caller_ping(caller, target):
                 return caller
+        if len(callers) > 0:
+            return callers[0]
         return ret
 
     def _caller_ping(self, caller, target, timeout=3):
