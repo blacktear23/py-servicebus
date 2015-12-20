@@ -1,7 +1,6 @@
 import uuid
 import signal
 import logging
-import asyncore
 from datetime import datetime
 from servicebus import pika
 from servicebus import utils
@@ -72,10 +71,9 @@ class AbstractReceiver(RabbitMQMessageDriver):
                 self.connected = False
                 self.running = False
                 self.channel.stop_consuming()
-            except IOError as e:
-                if e.errno == 4:
+            except EnvironmentError as e:
+                if e.errno == 4 and not self.running:
                     self.connected = False
-                    self.running = False
                     self.channel.stop_consuming()
         if not self.connected:
             self.connected = False
