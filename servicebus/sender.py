@@ -3,11 +3,12 @@ from servicebus.parser import XmlRequestGenerator, XmlResponseParser
 
 
 class Sender(object):
-    def __init__(self, configuration):
+    def __init__(self, configuration, smart_route=True):
         self.configuration = configuration
         self.exchange_name = configuration.exchange_name
         self.caller = None
         self.callers = None
+        self.smart_route = smart_route
 
     def get_caller(self, reverse=False):
         if self.caller is None:
@@ -16,6 +17,15 @@ class Sender(object):
         return self.caller
 
     def choose_caller(self, target, reverse=False):
+        if self.smart_route:
+            return self.smart_route_choose_caller(target, reverse)
+        else:
+            return self.simple_choose_caller(target, reverse)
+
+    def simple_choose_caller(self, target, reverse=False):
+        return self.get_caller(reverse)
+
+    def smart_route_choose_caller(self, target, reverse=False):
         callers = self.get_callers()
         if reverse:
             callers.reverse()
