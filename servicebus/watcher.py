@@ -1,6 +1,5 @@
 import time
 import logging
-import asyncore
 from threading import Thread
 from servicebus.command import cmd
 
