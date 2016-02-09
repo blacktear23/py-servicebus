@@ -209,7 +209,7 @@ class BaseConnection(connection.Connection):
             ssl_text = ""
 
         LOGGER.debug('Connecting to %s:%s%s', sock_addr_tuple[4][0],
-                    sock_addr_tuple[4][1], ssl_text)
+                     sock_addr_tuple[4][1], ssl_text)
 
         # Connect to the socket
         try:
@@ -363,8 +363,7 @@ class BaseConnection(connection.Connection):
         if self.socket and not write_only and (events & self.READ):
             self._handle_read()
 
-        if (self.socket and write_only and (events & self.READ) and
-            (events & self.ERROR)):
+        if (self.socket and write_only and (events & self.READ) and (events & self.ERROR)):
             LOGGER.error('BAD libc:  Write-Only but Read+Error. '
                          'Assume socket disconnected.')
             self._handle_disconnect()
@@ -452,7 +451,6 @@ class BaseConnection(connection.Connection):
                 return self._handle_error(error)
 
         return bytes_written
-
 
     def _init_connection_state(self):
         """Initialize or reset all of our internal state variables for a given

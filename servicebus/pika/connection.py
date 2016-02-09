@@ -380,23 +380,19 @@ class ConnectionParameters(Parameters):
             self.frame_max = frame_max
         if locale and self._validate_locale(locale):
             self.locale = locale
-        if (heartbeat_interval is not None and
-            self._validate_heartbeat_interval(heartbeat_interval)):
+        if (heartbeat_interval is not None and self._validate_heartbeat_interval(heartbeat_interval)):
             self.heartbeat = heartbeat_interval
         if ssl is not None and self._validate_ssl(ssl):
             self.ssl = ssl
         if ssl_options and self._validate_ssl_options(ssl_options):
             self.ssl_options = ssl_options or dict()
-        if (connection_attempts is not None and
-            self._validate_connection_attempts(connection_attempts)):
+        if (connection_attempts is not None and self._validate_connection_attempts(connection_attempts)):
             self.connection_attempts = connection_attempts
         if retry_delay is not None and self._validate_retry_delay(retry_delay):
             self.retry_delay = retry_delay
-        if (socket_timeout is not None and
-            self._validate_socket_timeout(socket_timeout)):
+        if (socket_timeout is not None and self._validate_socket_timeout(socket_timeout)):
             self.socket_timeout = socket_timeout
-        if (backpressure_detection is not None and
-            self._validate_backpressure(backpressure_detection)):
+        if (backpressure_detection is not None and self._validate_backpressure(backpressure_detection)):
             self.backpressure_detection = backpressure_detection
 
 
@@ -507,31 +503,25 @@ class URLParameters(Parameters):
                 raise ValueError('Invalid backpressure_detection value: %s' %
                                  values['backpressure_detection'])
 
-        if ('channel_max' in values and
-            self._validate_channel_max(values['channel_max'])):
+        if ('channel_max' in values and self._validate_channel_max(values['channel_max'])):
             self.channel_max = values['channel_max']
 
-        if ('connection_attempts' in values and
-            self._validate_connection_attempts(values['connection_attempts'])):
+        if ('connection_attempts' in values and self._validate_connection_attempts(values['connection_attempts'])):
             self.connection_attempts = values['connection_attempts']
 
-        if ('frame_max' in values and
-            self._validate_frame_max(values['frame_max'])):
+        if ('frame_max' in values and self._validate_frame_max(values['frame_max'])):
             self.frame_max = values['frame_max']
 
-        if ('heartbeat_interval' in values and
-            self._validate_heartbeat_interval(values['heartbeat_interval'])):
+        if ('heartbeat_interval' in values and self._validate_heartbeat_interval(values['heartbeat_interval'])):
             self.heartbeat = values['heartbeat_interval']
 
         if ('locale' in values and self._validate_locale(values['locale'])):
             self.locale = values['locale']
 
-        if ('retry_delay' in values and
-            self._validate_retry_delay(values['retry_delay'])):
+        if ('retry_delay' in values and self._validate_retry_delay(values['retry_delay'])):
             self.retry_delay = values['retry_delay']
 
-        if ('socket_timeout' in values and
-            self._validate_socket_timeout(values['socket_timeout'])):
+        if ('socket_timeout' in values and self._validate_socket_timeout(values['socket_timeout'])):
             self.socket_timeout = values['socket_timeout']
 
         if 'ssl_options' in values:
@@ -914,8 +904,7 @@ class Connection(object):
         :raises: ProtocolVersionMismatch
 
         """
-        if (value.method.version_major,
-            value.method.version_minor) != spec.PROTOCOL_VERSION[0:2]:
+        if (value.method.version_major, value.method.version_minor) != spec.PROTOCOL_VERSION[0:2]:
             raise exceptions.ProtocolVersionMismatch(frame.ProtocolHeader(),
                                                      value)
 
@@ -1017,7 +1006,7 @@ class Connection(object):
         :param pika.frame.Method value: The frame to deliver
 
         """
-        if not value.channel_number in self._channels:
+        if value.channel_number not in self._channels:
             if self._is_basic_deliver_frame(value):
                 self._reject_out_of_band_delivery(value.channel_number,
                                                   value.method.delivery_tag)
@@ -1356,8 +1345,8 @@ class Connection(object):
 
         """
         LOGGER.debug('Disconnected from RabbitMQ at %s:%i (%s): %s',
-                       self.params.host, self.params.port, reply_code,
-                       reply_text)
+                     self.params.host, self.params.port, reply_code,
+                     reply_text)
         self._set_connection_state(self.CONNECTION_CLOSED)
         for channel in dictkeys(self._channels):
             if channel not in self._channels:
@@ -1376,8 +1365,7 @@ class Connection(object):
         :rtype: bool
 
         """
-        if (self._is_method_frame(frame_value) and
-            self._has_pending_callbacks(frame_value)):
+        if (self._is_method_frame(frame_value) and self._has_pending_callbacks(frame_value)):
             self.callbacks.process(frame_value.channel_number,  # Prefix
                                    frame_value.method,  # Key
                                    self,  # Caller

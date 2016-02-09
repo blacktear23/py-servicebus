@@ -441,8 +441,7 @@ class Channel(object):
 
         """
         self._validate_channel_and_callback(callback)
-        if (self.connection.publisher_confirms is False or
-            self.connection.basic_nack is False):
+        if (self.connection.publisher_confirms is False or self.connection.basic_nack is False):
             raise exceptions.MethodNotImplemented('Not Supported on Server')
 
         # Add the ack and nack callbacks
@@ -1205,8 +1204,7 @@ class ContentFrameDispatcher(object):
         :param Method|Header|Body frame_value: The frame to process
 
         """
-        if (isinstance(frame_value, frame.Method) and
-            spec.has_content(frame_value.method.INDEX)):
+        if (isinstance(frame_value, frame.Method) and spec.has_content(frame_value.method.INDEX)):
             self._method_frame = frame_value
         elif isinstance(frame_value, frame.Header):
             self._header_frame = frame_value

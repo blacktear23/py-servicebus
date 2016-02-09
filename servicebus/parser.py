@@ -81,8 +81,8 @@ class XmlMessageParser(AbstractMessageParser, XmlParserHelper):
             params_parser.parse()
             params = params_parser.params
 
-            return Event(eid, category, service, token, params)
-        except Exception as e:
+            return Event(eid, category, service, token, params, version)
+        except Exception:
             # if got any exception in parse return None
             return None
 
@@ -131,7 +131,7 @@ class XmlResponseParser(XmlParserHelper):
             rid = self.get_request_id(root)
             message = self.get_message(root)
             return (rid, message)
-        except Exception as e:
+        except Exception:
             # if got any exception in parse return None
             return None
 
@@ -182,7 +182,8 @@ class XmlRequestGenerator(object):
         return json.dumps(self.message)
 
     def to_xml(self):
-        return MESSAGE_TEMPLATE % (self.generate_id(),
+        return MESSAGE_TEMPLATE % (
+            self.generate_id(),
             self.generate_token(),
             self.category, self.service, self.encode_params())
 

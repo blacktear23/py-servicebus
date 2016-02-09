@@ -22,7 +22,6 @@ if not PY2:
     # the unicode type is str
     unicode_type = str
 
-
     def dictkeys(dct):
         """
         Returns a list of keys of dictionary
@@ -102,4 +101,3 @@ def as_bytes(value):
     if not isinstance(value, bytes):
         return value.encode('UTF-8')
     return value
-

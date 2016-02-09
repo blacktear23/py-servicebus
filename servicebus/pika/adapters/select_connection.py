@@ -263,7 +263,6 @@ class SelectPoller(object):
         timeout = min((timeout, SelectPoller.POLL_TIMEOUT))
         return timeout * SelectPoller.POLL_TIMEOUT_MULT
 
-
     def process_timeouts(self):
         """Process the self._timeouts event stack"""
 
@@ -286,7 +285,6 @@ class SelectPoller(object):
                 # have been deleted just now.
                 if self._timeouts.pop(k, None) is not None:
                     self._next_timeout = None
-
 
     def add_handler(self, fileno, handler, events):
         """Add a new fileno to the set to be monitored
@@ -312,7 +310,6 @@ class SelectPoller(object):
                 self._fd_events[ev].add(fileno)
             else:
                 self._fd_events[ev].discard(fileno)
-
 
     def remove_handler(self, fileno):
         """Remove a file descriptor from the set
@@ -441,6 +438,7 @@ class SelectPoller(object):
             if events:
                 handler = self._fd_handlers[fileno]
                 handler(fileno, events, write_only=write_only)
+
 
 class KQueuePoller(SelectPoller):
     """KQueuePoller works on BSD based systems and is faster than select"""

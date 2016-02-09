@@ -183,7 +183,7 @@ class ProtocolHeader(amqp_object.AMQPObject):
 
         """
         return b'AMQP' + struct.pack('BBBB', 0, self.major, self.minor,
-                                    self.revision)
+                                     self.revision)
 
 
 def decode_frame(data_in):
@@ -246,8 +246,8 @@ def decode_frame(data_in):
         # Get the Properties type
         properties = spec.props[class_id]()
 
-        # Decode the properties
-        out = properties.decode(frame_data[12:])
+        # Decode the properties out
+        properties.decode(frame_data[12:])
 
         # Return a Header frame
         return frame_end, Header(channel_number, body_size, properties)

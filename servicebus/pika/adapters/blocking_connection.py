@@ -35,6 +35,7 @@ class _CallbackResult(object):
     callback results; INTERNAL USE ONLY!
     """
     __slots__ = ('_value_class', '_ready', '_values')
+
     def __init__(self, value_class=None):
         """
         :param callable value_class: only needed if the CallbackResult
@@ -85,7 +86,7 @@ class _CallbackResult(object):
         """True if the object is in a signaled state"""
         return self._ready
 
-    def signal_once(self, *_args, **_kwargs): # pylint: disable=W0613
+    def signal_once(self, *_args, **_kwargs):  # pylint: disable=W0613
         """ Set as ready
 
         :raises AssertionError: if result was already signalled
@@ -129,7 +130,6 @@ class _CallbackResult(object):
 
         self._ready = True
 
-
     @property
     def value(self):
         """
@@ -143,7 +143,6 @@ class _CallbackResult(object):
             % (self._values,))
 
         return self._values[0]
-
 
     @property
     def elements(self):
@@ -400,10 +399,9 @@ class BlockingConnection(object):  # pylint: disable=R0902
         #   empty outbound buffer and no waiters
         #         OR
         #   empty outbound buffer and any waiter is ready
-        is_done = (lambda:
-            self._closed_result.ready or
-            (not self._impl.outbound_buffer and
-             (not waiters or any(ready() for ready in  waiters))))
+        is_done = (lambda: self._closed_result.ready or
+                   (not self._impl.outbound_buffer and
+                    (not waiters or any(ready() for ready in waiters))))
 
         # Process I/O until our completion condition is satisified
         while not is_done():
@@ -696,8 +694,6 @@ class BlockingConnection(object):  # pylint: disable=R0902
 
             # Drive I/O until Channel.Open-ok
             channel._flush_output(opened_args.is_ready)
-
-
         return channel
 
     def __enter__(self):
@@ -962,7 +958,6 @@ class _QueueConsumerGeneratorInfo(object):  # pylint: disable=R0903
         """
         self.params = params
         self.consumer_tag = consumer_tag
-        #self.messages = deque()
 
         # Holds pending events of types _ConsumerDeliveryEvt and
         # _ConsumerCancellationEvt
@@ -1002,7 +997,6 @@ class BlockingChannel(object):  # pylint: disable=R0904,R0902
             'properties',  # pika.spec.BasicProperties
             'body'      # str, unicode, or bytes (python 3.x)
         ])
-
 
     # For use as value_class with any _CallbackResult that expects method_frame
     # as the only arg
@@ -1208,7 +1202,6 @@ class BlockingChannel(object):  # pylint: disable=R0904,R0902
 
         self._puback_return = ReturnedMessage(method, properties, body)
 
-
     def _add_pending_event(self, evt):
         """Append an event to the channel's list of events that are ready for
         dispatch to user and signal our connection that this channel is ready
@@ -1218,7 +1211,6 @@ class BlockingChannel(object):  # pylint: disable=R0904,R0902
         """
         self._pending_events.append(evt)
         self.connection._request_channel_dispatch(self.channel_number)
-
 
     def _on_consumer_cancelled_by_broker(self,  # pylint: disable=C0103
                                          method_frame):
@@ -1318,7 +1310,6 @@ class BlockingChannel(object):  # pylint: disable=R0904,R0902
                                              evt.method_frame)
             else:
                 evt.dispatch()
-
 
     def close(self, reply_code=0, reply_text="Normal Shutdown"):
         """Will invoke a clean shutdown of the channel with the AMQP Broker.
@@ -1770,7 +1761,7 @@ class BlockingChannel(object):  # pylint: disable=R0904,R0902
                 raise
 
             LOGGER.debug('Created new queue consumer generator %r',
-                        self._queue_consumer_generator)
+                         self._queue_consumer_generator)
 
         while self._queue_consumer_generator is not None:
             if self._queue_consumer_generator.pending_events:
@@ -2190,8 +2181,7 @@ class BlockingChannel(object):  # pylint: disable=R0904,R0902
         """
         assert len(kwargs) <= 1, kwargs
 
-        with _CallbackResult(
-            self._MethodFrameCallbackResultArgs) as declare_ok_result:
+        with _CallbackResult(self._MethodFrameCallbackResultArgs) as declare_ok_result:
             self._impl.exchange_declare(
                 callback=declare_ok_result.set_value_once,
                 exchange=exchange,
@@ -2219,8 +2209,7 @@ class BlockingChannel(object):  # pylint: disable=R0904,R0902
           `spec.Exchange.DeleteOk`
 
         """
-        with _CallbackResult(
-            self._MethodFrameCallbackResultArgs) as delete_ok_result:
+        with _CallbackResult(self._MethodFrameCallbackResultArgs) as delete_ok_result:
             self._impl.exchange_delete(
                 callback=delete_ok_result.set_value_once,
                 exchange=exchange,
@@ -2277,8 +2266,7 @@ class BlockingChannel(object):  # pylint: disable=R0904,R0902
           `spec.Exchange.UnbindOk`
 
         """
-        with _CallbackResult(
-            self._MethodFrameCallbackResultArgs) as unbind_ok_result:
+        with _CallbackResult(self._MethodFrameCallbackResultArgs) as unbind_ok_result:
             self._impl.exchange_unbind(
                 callback=unbind_ok_result.set_value_once,
                 destination=destination,
@@ -2390,8 +2378,7 @@ class BlockingChannel(object):  # pylint: disable=R0904,R0902
           `spec.Queue.BindOk`
 
         """
-        with _CallbackResult(
-            self._MethodFrameCallbackResultArgs) as bind_ok_result:
+        with _CallbackResult(self._MethodFrameCallbackResultArgs) as bind_ok_result:
             self._impl.queue_bind(callback=bind_ok_result.set_value_once,
                                   queue=queue,
                                   exchange=exchange,
