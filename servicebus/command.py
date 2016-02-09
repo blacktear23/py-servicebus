@@ -8,8 +8,14 @@ def cmd(cmd):
     Execute a command, return stdout and stderr in tuple
     """
     logging.debug("Execute Command: %s" % cmd)
-    process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
-    return (process.stdout.read(), process.stderr.read())
+    process = None
+    try:
+        process = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, close_fds=True)
+        return (process.stdout.read(), process.stderr.read())
+    finally:
+        if process is not None:
+            process.stdout.close()
+            process.stderr.close()
 
 
 def get_host_name():
