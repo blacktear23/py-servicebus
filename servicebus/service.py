@@ -14,7 +14,7 @@ else:
 
 
 class ServiceBus(object):
-    def __init__(self, configuration):
+    def __init__(self, configuration, queue_len=10):
         self.configuration = configuration
         self.rpc_services = {}
         self.message_services = {}
@@ -22,6 +22,7 @@ class ServiceBus(object):
         self.message_services_threads = {}
         self.node_name = ""
         self.after_fork_hook = None
+        self.queue_len = queue_len
 
     def after_fork(self):
         if self.after_fork_hook:
@@ -43,13 +44,13 @@ class ServiceBus(object):
 
     def _prepare_message_service_threads(self):
         for key, service in self.message_services.items():
-            thread = ServiceRunner(service)
+            thread = ServiceRunner(service, self.queue_len)
             thread.start()
             self.message_services_threads[key] = thread
 
     def _prepare_rpc_service_threads(self):
         for key, service in self.rpc_services.items():
-            thread = ServiceRunner(service)
+            thread = ServiceRunner(service, self.queue_len)
             thread.start()
             self.rpc_services_threads[key] = thread
 
@@ -115,10 +116,10 @@ class ServiceBus(object):
 
 
 class ServiceRunner(Thread):
-    def __init__(self, service):
+    def __init__(self, service, queue_len=1):
         super(ServiceRunner, self).__init__()
         self.service = service
-        self.queue = Queue(1)
+        self.queue = Queue(queue_len)
         self.is_background = self.is_background_service(service)
         self.background_threads = []
 
