@@ -14,7 +14,7 @@ else:
 
 
 class ServiceBus(object):
-    def __init__(self, configuration, queue_len=10):
+    def __init__(self, configuration, queue_len=100):
         self.configuration = configuration
         self.rpc_services = {}
         self.message_services = {}
