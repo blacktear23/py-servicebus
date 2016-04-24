@@ -22,6 +22,7 @@ class ServiceBus(object):
         self.message_services_threads = {}
         self.node_name = ""
         self.after_fork_hook = None
+        self.on_exit_hook = None
         self.queue_len = queue_len
 
     def after_fork(self):
@@ -30,6 +31,9 @@ class ServiceBus(object):
 
     def set_after_fork_hook(self, hook):
         self.after_fork_hook = hook
+
+    def set_on_exit_hook(self, hook):
+        self.on_exit_hook = hook
 
     def set_node_name(self, name):
         self.node_name = name
@@ -97,6 +101,12 @@ class ServiceBus(object):
                 logging.info('[Server %s]: Connection lost, wait 10 second to retry' % host)
                 time.sleep(10)
         self.stop_service_threads()
+        try:
+            if self.on_exit_hook is not None:
+                logging.info('[Server %s]: Call on_exit hook' % host)
+                self.on_exit_hook()
+        except Exception as e:
+            logging.exception(e)
         logging.info("[Server %s]: Shutdown" % host)
 
     def __force_close_sockets(self):
