@@ -1,8 +1,9 @@
 import sys
 import time
 import copy
-import asyncore
+import signal
 import logging
+import asyncore
 from threading import Thread
 from multiprocessing import Process
 from servicebus import utils
@@ -85,6 +86,20 @@ class ServiceBus(object):
         receiver = None
         self.after_fork()
         self.prepare_service_threads()
+
+        def process_exit(signum, frame):
+            run = False
+            try:
+                if self.on_exit_hook is not None:
+                    logging.info('[Server %s]: Call on_exit hook' % host)
+                    self.on_exit_hook()
+            except Exception as e:
+                logging.exception(e)
+            logging.info("[Server %s]: Shutdown" % host)
+            raise SystemExit("Terminate")
+
+        signal.signal(signal.SIGTERM, process_exit)
+
         while run:
             receiver = None
             try:
