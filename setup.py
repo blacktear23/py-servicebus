@@ -9,7 +9,7 @@ Features:
 """
 
 setup(
-    name='servicebus',
+    name='py-servicebus',
     version='2.0',
     author='Rain Li',
     author_email='blacktear23@gmail.com',
@@ -23,7 +23,6 @@ setup(
                  'Intended Audience :: Developers',
                  'Operating System :: OS Independent',
                  'License :: OSI Approved :: BSD License',
-                 'Operating System :: Linux/MacOS',
                  'Programming Language :: Python :: 2.7',
                  'Programming Language :: Python :: 3',
                  'Programming Language :: Python :: Implementation :: CPython',
