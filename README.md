@@ -99,6 +99,12 @@ Response Message:
 python setup.py install
 ```
 
+or
+
+```bash
+pip install py-servicebus
+```
+
 ### Agent part
 
 Write a Service:
