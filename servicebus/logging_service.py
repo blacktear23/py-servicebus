@@ -36,7 +36,6 @@ class LogRecordHandler(SocketServer.BaseRequestHandler):
 
 
 class LoggingService(SocketServer.ThreadingUDPServer):
-    allow_reuse_address = 1
     max_packet_size = 16384
 
     @classmethod
