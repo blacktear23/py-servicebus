@@ -68,17 +68,38 @@ class AbstractReceiver(RabbitMQMessageDriver):
             try:
                 self.channel.start_consuming()
             except KeyboardInterrupt:
-                self.connected = False
                 self.running = False
-                self.channel.stop_consuming()
+                self.connected = False
+                self.__safe_close()
             except EnvironmentError as e:
                 if e.errno == 4 and not self.running:
+                    logging.info("Got SIGTERM or SIGINT")
+                    self.running = False
                     self.connected = False
-                    self.channel.stop_consuming()
+                    self.__safe_close()
+                else:
+                    self.connected = False
+                    self.__safe_close()
+                    raise e
+            except Exception as e:
+                logging.exception(e)
+                self.connected = False
+                self.__safe_close()
+                raise e
         if not self.connected:
             self.connected = False
-            self.channel.stop_consuming()
+            self.__safe_close()
         logging.info("All connection closed!")
+
+    def __safe_close(self):
+        try:
+            self.channel.stop_consuming()
+        except Exception:
+            pass
+        try:
+            self.connect.close()
+        except Exception:
+            pass
 
     def response_message(self, channel, method, header, message):
         channel.basic_publish(exchange='',
@@ -95,16 +116,22 @@ class AbstractReceiver(RabbitMQMessageDriver):
     def start_receive(self, count=None):
         self.channel.basic_qos(prefetch_count=1)
         self.channel.basic_consume(self.__on_receive, queue=self.queue_name)
-        PingWatcher.start_watch(self)
+        watcher = PingWatcher.start_watch(self)
         signal.signal(signal.SIGTERM, self.process_exit)
-        self.loop()
-        return self.running
+        try:
+            self.loop()
+            return self.running
+        finally:
+            watcher.stop()
 
     def process_exit(self, signum, frame):
         logging.info("Shutdown")
         self.running = False
         self.connected = False
-        self.channel.stop_consuming()
+        try:
+            self.channel.stop_consuming()
+        except Exception:
+            pass
         self.close()
 
     def __on_receive(self, channel, method, header, body):

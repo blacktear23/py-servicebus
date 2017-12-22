@@ -5,25 +5,40 @@ from servicebus.command import cmd
 
 
 DIDA_TIMEOUT = 60
+JIFFY = 5
 
 
 class PingWatcher:
     def __init__(self, receiver):
+        self.run = True
         self.receiver = receiver
 
     def do_watch(self):
         ip = self.receiver.host
-        while True:
-            ret = self.ping(ip)
-            if not ret and self.receiver.connected:
-                self.receiver.connected = False
-                logging.info("Ping Error!")
-                return True
-            time.sleep(DIDA_TIMEOUT)
-            if not self.receiver.connected:
-                logging.info("Message receiver exited, PingWatcher out.")
-                return True
+        ret = self.ping(ip)
+        if not ret and self.receiver.connected:
+            self.receiver.connected = False
+            logging.info("Ping Error!")
+            return True
+        duration = 0
+        while self.run:
+            time.sleep(JIFFY)
+            duration += JIFFY
+            if duration >= DIDA_TIMEOUT:
+                duration = 0
+                ret = self.ping(ip)
+                if not ret and self.receiver.connected:
+                    self.receiver.connected = False
+                    logging.info("Ping Error!")
+                    return True
+                if not self.receiver.connected:
+                    logging.info("Message receiver exited, PingWatcher out.")
+                    return True
         return False
+
+    def stop(self):
+        logging.info("PingWatcher Killed")
+        self.run = False
 
     def do_ping(self, ip):
         command_linux = "ping -c 1 %s | grep \" 1 received,\"" % (ip)
@@ -43,10 +58,14 @@ class PingWatcher:
         return False
 
     def run_watch(self):
-        while True:
+        while self.run:
             try:
                 if self.do_watch():
                     return
+                else:
+                    if not self.run:
+                        logging.info("PingWatcher out")
+                        return
             except Exception as e:
                 logging.error(e)
 
@@ -55,3 +74,4 @@ class PingWatcher:
         pw = PingWatcher(receiver)
         thread = Thread(target=pw.run_watch)
         thread.start()
+        return pw
