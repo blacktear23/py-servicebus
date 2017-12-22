@@ -601,9 +601,8 @@ class BlockingConnection(object):  # pylint: disable=R0902
 
         del self._ready_events[index_to_remove]
 
-    def error_close(self):
-        self._impl.stop_ioloop_on_close = True
-        self.close()
+    def close_ioloop(self):
+        self._impl.ioloop.close()
 
     def close(self, reply_code=200, reply_text='Normal shutdown'):
         """Disconnect from RabbitMQ. If there are any open channels, it will
