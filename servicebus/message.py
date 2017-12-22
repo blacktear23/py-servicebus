@@ -135,7 +135,8 @@ class AbstractReceiver(RabbitMQMessageDriver):
 
     def join_watcher(self):
         try:
-            self.watcher.join()
+            if self.watcher:
+                self.watcher.join()
         except Exception:
             pass
 

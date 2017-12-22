@@ -116,7 +116,8 @@ class ServiceBus(object):
             if run:
                 logging.info('[Server %s]: Connection lost, wait 10 second to retry' % host)
                 time.sleep(10)
-                receiver.join_watcher()
+                if receiver is not None:
+                    receiver.join_watcher()
         self.stop_service_threads()
         try:
             if self.on_exit_hook is not None:
