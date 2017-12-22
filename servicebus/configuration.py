@@ -56,7 +56,7 @@ class Configuration(object):
     Thie method will create a message receiver.
     params: host    RabbitMQ server's host
     """
-    def create_receiver(self, host):
+    def create_receiver(self, host, close_ioloop=True):
         receiver = MessageBusReceiver(
             host,
             self.get_port(),
@@ -65,7 +65,15 @@ class Configuration(object):
             self.use_ssl,
             self.socket_timeout
         )
-        receiver.ensure_connection()
+        try:
+            receiver.ensure_connection()
+        except Exception as e:
+            if close_ioloop:
+                try:
+                    receiver.connection.close_ioloop()
+                except Exception:
+                    pass
+            raise e
         return receiver
 
     """
