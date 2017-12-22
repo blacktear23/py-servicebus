@@ -101,7 +101,7 @@ class AbstractReceiver(RabbitMQMessageDriver):
         except Exception:
             pass
         try:
-            self.connect.close()
+            self.connect.error_close()
         except Exception:
             pass
 
