@@ -333,7 +333,7 @@ class BlockingConnection(object):  # pylint: disable=R0902
             on_open_callback=self._opened_result.set_value_once,
             on_open_error_callback=self._open_error_result.set_value_once,
             on_close_callback=self._closed_result.set_value_once,
-            stop_ioloop_on_close=False)
+            stop_ioloop_on_close=True)
 
         self._process_io_for_connection_setup()
 

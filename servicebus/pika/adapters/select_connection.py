@@ -368,6 +368,7 @@ class SelectPoller(object):
 
         with self._mutex:
             if self._w_interrupt is None:
+                self.close()
                 return
 
             try:
@@ -382,6 +383,10 @@ class SelectPoller(object):
                 # loop after POLL_TIMEOUT secs in worst case anyway.
                 LOGGER.warning("Failed to send ioloop interrupt: %s", err)
                 raise
+        self.close()
+
+    def close(self):
+        pass
 
     def poll(self, write_only=False):
         """Wait for events on interested filedescriptors.
@@ -525,6 +530,9 @@ class KQueuePoller(SelectPoller):
 
         self._process_fd_events(fd_event_map, write_only)
 
+    def close(self):
+        self._kqueue.close()
+
 
 class PollPoller(SelectPoller):
     """Poll works on Linux and can have better performance than EPoll in
@@ -546,6 +554,9 @@ class PollPoller(SelectPoller):
 
     def create_poller(self):
         return select.poll()  # pylint: disable=E1101
+
+    def close(self):
+        self._poll.close()
 
     def add_handler(self, fileno, handler, events):
         """Add a file descriptor to the poll set
