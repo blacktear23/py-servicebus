@@ -69,9 +69,13 @@ class PingWatcher:
             except Exception as e:
                 logging.error(e)
 
+    def join(self):
+        self.thread.join()
+
     @classmethod
     def start_watch(cls, receiver):
         pw = PingWatcher(receiver)
         thread = Thread(target=pw.run_watch)
         thread.start()
+        pw.thread = thread
         return pw

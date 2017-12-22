@@ -116,13 +116,13 @@ class AbstractReceiver(RabbitMQMessageDriver):
     def start_receive(self, count=None):
         self.channel.basic_qos(prefetch_count=1)
         self.channel.basic_consume(self.__on_receive, queue=self.queue_name)
-        watcher = PingWatcher.start_watch(self)
+        self.watcher = PingWatcher.start_watch(self)
         signal.signal(signal.SIGTERM, self.process_exit)
         try:
             self.loop()
             return self.running
         finally:
-            watcher.stop()
+            self.watcher.stop()
 
     def process_exit(self, signum, frame):
         logging.info("Shutdown")
@@ -133,6 +133,12 @@ class AbstractReceiver(RabbitMQMessageDriver):
         except Exception:
             pass
         self.close()
+
+    def join_watcher(self):
+        try:
+            self.watcher.join()
+        except Exception:
+            pass
 
     def __on_receive(self, channel, method, header, body):
         try:
