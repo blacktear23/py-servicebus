@@ -97,6 +97,10 @@ class AbstractReceiver(RabbitMQMessageDriver):
         except Exception:
             pass
         try:
+            self.channel.close()
+        except Exception:
+            pass
+        try:
             self.connect.close()
         except Exception:
             pass
@@ -117,7 +121,6 @@ class AbstractReceiver(RabbitMQMessageDriver):
         self.channel.basic_qos(prefetch_count=1)
         self.channel.basic_consume(self.__on_receive, queue=self.queue_name)
         self.watcher = PingWatcher.start_watch(self)
-        signal.signal(signal.SIGTERM, self.process_exit)
         try:
             self.loop()
             return self.running
@@ -128,11 +131,7 @@ class AbstractReceiver(RabbitMQMessageDriver):
         logging.info("Shutdown")
         self.running = False
         self.connected = False
-        try:
-            self.channel.stop_consuming()
-        except Exception:
-            pass
-        self.close()
+        self.__safe_close()
 
     def join_watcher(self):
         try:

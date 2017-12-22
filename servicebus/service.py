@@ -90,6 +90,7 @@ class ServiceBus(object):
         def process_exit(signum, frame):
             run = False
             try:
+                self.stop_service_threads()
                 if self.on_exit_hook is not None:
                     logging.info('[Server %s]: Call on_exit hook' % host)
                     self.on_exit_hook()
