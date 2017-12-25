@@ -619,4 +619,12 @@ class EPollPoller(PollPoller):
     POLL_TIMEOUT_MULT = 1
 
     def create_poller(self):
-        return select.epoll()  # pylint: disable=E1101
+        if not hasattr(self.__class__, '__instance__'):
+            self.__class__.__instance__ = select.epoll()
+        elif self.__class__.__instance__ is None:
+            self.__class__.__instance__ = select.epoll()
+        return self.__class__.__instance__
+
+    def close(self):
+        self._poll.close()
+        self.__class__.__instance__ = None
