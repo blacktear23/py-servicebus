@@ -232,7 +232,7 @@ class CallbackManager(object):
             LOGGER.debug('Calling %s for "%s:%s"', callback, prefix, key)
             try:
                 callback(*args, **keywords)
-            except:
+            except Exception:
                 LOGGER.exception('Calling %s for "%s:%s" failed', callback,
                                  prefix, key)
                 raise

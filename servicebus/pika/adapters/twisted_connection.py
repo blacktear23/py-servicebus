@@ -105,7 +105,7 @@ class TwistedChannel(object):
 
         try:
             consumer_tag = self.__channel.basic_consume(*args, **kwargs)
-        except:
+        except Exception:
             return defer.fail()
 
         return defer.succeed((queue, consumer_tag))
@@ -163,7 +163,7 @@ class TwistedChannel(object):
 
             try:
                 method(*args, **kwargs)
-            except:
+            except Exception:
                 return defer.fail()
             return d
 

@@ -2173,6 +2173,7 @@ class BasicProperties(amqp_object.Properties):
                 break
         return flag_pieces + pieces
 
+
 methods = {
     0x000A000A: Connection.Start,
     0x000A000B: Connection.StartOk,

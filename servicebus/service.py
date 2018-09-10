@@ -82,13 +82,13 @@ class ServiceBus(object):
         return processes
 
     def run_server(self, configuration, host):
-        run = True
+        self.running = True
         receiver = None
         self.after_fork()
         self.prepare_service_threads()
 
         def process_exit(signum, frame):
-            run = False
+            self.running = False
             try:
                 self.stop_service_threads()
                 if self.on_exit_hook is not None:
@@ -101,7 +101,7 @@ class ServiceBus(object):
 
         signal.signal(signal.SIGTERM, process_exit)
 
-        while run:
+        while self.running:
             receiver = None
             try:
                 logging.info('[Server %s]: Build Server' % host)
@@ -109,11 +109,11 @@ class ServiceBus(object):
                 receiver.set_service_bus(self)
                 receiver.bind_queue_to_exchange(configuration.queue_name(), configuration.exchange_name)
                 logging.info('[Server %s]: Start Receive' % host)
-                run = receiver.start_receive()
+                self.running = receiver.start_receive()
             except Exception as e:
                 logging.exception(e)
 
-            if run:
+            if self.running:
                 logging.info('[Server %s]: Connection lost, wait 10 second to retry' % host)
                 time.sleep(10)
                 if receiver is not None:

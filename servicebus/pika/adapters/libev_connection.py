@@ -206,7 +206,7 @@ class LibevConnection(BaseConnection):
                     self._PIKA_TO_LIBEV_ARRAY[self.event_state])
 
                 break
-            except:  # sometimes the stop() doesn't complete in time
+            except Exception:  # sometimes the stop() doesn't complete in time
                 if retries > 5:
                     raise
                 self._io_watcher.stop()  # so try it again
