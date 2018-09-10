@@ -1,16 +1,20 @@
 import signal
 import pickle
 import struct
-import SocketServer
 import logging
 import logging.handlers
 from multiprocessing import Process
+
+try:
+    from SocketServer import BaseRequestHandler, ThreadingUDPServer
+except Exception:
+    from socketserver import BaseRequestHandler, ThreadingUDPServer
 
 
 DEFAULT_FORMAT_PATTERN = '[%(asctime)s PID:%(process)d]%(levelname)s:%(message)s'
 
 
-class LogRecordHandler(SocketServer.BaseRequestHandler):
+class LogRecordHandler(BaseRequestHandler):
     def handle(self):
         data = self.request[0].strip()
         self.process_data(data)
@@ -35,7 +39,7 @@ class LogRecordHandler(SocketServer.BaseRequestHandler):
         logging.getLogger().handle(record)
 
 
-class LoggingService(SocketServer.ThreadingUDPServer):
+class LoggingService(ThreadingUDPServer):
     max_packet_size = 16384
 
     @classmethod
@@ -50,8 +54,7 @@ class LoggingService(SocketServer.ThreadingUDPServer):
         self.file_name = file_name
         self.level = level
         self.format_pattern = format_pattern
-        SocketServer.ThreadingUDPServer.__init__(self, ('127.0.0.1', port),
-                                                 LogRecordHandler)
+        super(LoggingService, self).__init__(('127.0.0.1', port), LogRecordHandler)
         self.abort = 0
         self.timeout = 1
 
