@@ -54,7 +54,7 @@ class LoggingService(ThreadingUDPServer):
         self.file_name = file_name
         self.level = level
         self.format_pattern = format_pattern
-        super(LoggingService, self).__init__(('127.0.0.1', port), LogRecordHandler)
+        ThreadingUDPServer.__init__(self, ('127.0.0.1', port), LogRecordHandler)
         self.abort = 0
         self.timeout = 1
 
