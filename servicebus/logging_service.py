@@ -1,5 +1,5 @@
 import signal
-import cPickle
+import pickle
 import struct
 import SocketServer
 import logging
@@ -29,7 +29,7 @@ class LogRecordHandler(SocketServer.BaseRequestHandler):
             logging.exception(e)
 
     def unpickle(self, data):
-        return cPickle.loads(data)
+        return pickle.loads(data)
 
     def handle_log_record(self, record):
         logging.getLogger().handle(record)
