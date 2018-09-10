@@ -10,7 +10,7 @@ Features:
 
 setup(
     name='py-servicebus',
-    version='2.7',
+    version='2.8',
     author='Rain Li',
     author_email='blacktear23@gmail.com',
     url='https://github.com/blacktear23/py-servicebus',
