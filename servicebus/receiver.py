@@ -53,8 +53,6 @@ class MessageBusReceiver(AbstractReceiver):
         event = self.message_parser.parse(body)
         if not self.message_parser.validate_token(event.token):
             logging.error('Token Error')
-            msg = XmlResponseGenerator(event.id, "Token not valid!")
-            self.response_message(channel, method, header, msg.to_xml())
             return
 
         request = Request(event, self)
@@ -63,8 +61,6 @@ class MessageBusReceiver(AbstractReceiver):
         if service is None:
             error_msg = 'Cannot Find Message Service: %s.%s' % (event.category, event.service)
             logging.error(error_msg)
-            msg = XmlResponseGenerator(event.id, error_msg)
-            self.response_message(channel, method, header, msg.to_xml())
         else:
             logging.info("Call Message Service %s.%s" % (event.category, event.service))
             service.on_message(request)
