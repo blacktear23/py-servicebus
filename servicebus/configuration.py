@@ -51,6 +51,9 @@ class Configuration(object):
         self.socket_timeout = 5
         if 'socket_timeout' in config:
             self.socket_timeout = config['socket_timeout']
+        self.heartbeat_interval = 60
+        if 'heartbeat_interval' in config:
+            self.heartbeat_interval = config['heartbeat_interval']
 
     """
     Thie method will create a message receiver.
@@ -63,7 +66,8 @@ class Configuration(object):
             self.user,
             self.password,
             self.use_ssl,
-            self.socket_timeout
+            self.socket_timeout,
+            self.heartbeat_interval
         )
         try:
             receiver.ensure_connection()
