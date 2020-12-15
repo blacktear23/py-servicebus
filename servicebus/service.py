@@ -136,9 +136,16 @@ class ServiceBus(object):
 
     def stop_service_threads(self):
         logging.info("Stop Service Threads")
-        all_threads = self.message_services_threads.values() + self.rpc_services_threads.values()
+        all_threads = []
+        for msg_thread in self.message_services_threads.values():
+            all_threads.append(msg_thread)
+
+        for rpc_thread in self.rpc_services_threads.values():
+            all_threads.append(rpc_thread)
+
         for sthread in all_threads:
             sthread.stop()
+
         for sthread in all_threads:
             sthread.join()
 
